@@ -516,10 +516,8 @@
       var utm = new URLSearchParams(location.search).get('utm_source');
       if(utm) return utm;
       if(document.referrer){
-        var ref = new URL(document.referrer);
-        if(ref.hostname !== location.hostname) return ref.hostname;
-        // ホームページ内（トップ・/lp/・/area/〇〇/）から来た場合は、どのページかを残す
-        if(ref.pathname.indexOf('/yoyaku/') !== 0) return ref.hostname + ref.pathname;
+        var host = new URL(document.referrer).hostname;
+        if(host !== location.hostname) return host;
       }
     } catch(e){}
     return '直接';
