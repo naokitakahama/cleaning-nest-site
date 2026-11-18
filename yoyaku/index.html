@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エアコンクリーニング お見積もり・ご予約フォーム</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="logo">🌸 エアコンクリーニング お見積もり・ご予約</div>
+    <div class="steps">
+      <div class="step-item active" data-step="1"><span class="num">1</span><span class="label">お見積り</span></div>
+      <div class="step-item" data-step="2"><span class="num">2</span><span class="label">ご予約情報</span></div>
+      <div class="step-item" data-step="3"><span class="num">3</span><span class="label">完了</span></div>
+    </div>
+  </header>
+
+  <main>
+
+  <!-- ==================== STEP 1: 見積もり ==================== -->
+  <section class="step-panel active" id="step1">
+
+    <div class="card">
+      <h2>❄️ エアコンの台数を選んでください</h2>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">通常壁掛けエアコン</div>
+          <div class="qty-price">¥8,000 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="normal" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-normal-val">0</span>
+          <button type="button" class="qty-btn" data-target="normal" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">お掃除機能付きエアコン</div>
+          <div class="qty-price">¥12,000 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="selfclean" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-selfclean-val">0</span>
+          <button type="button" class="qty-btn" data-target="selfclean" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">業務用壁掛けエアコン</div>
+          <div class="qty-price">¥15,000 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="business" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-business-val">0</span>
+          <button type="button" class="qty-btn" data-target="business" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">天カセエアコン</div>
+          <div class="qty-price">¥29,800 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="cassette" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-cassette-val">0</span>
+          <button type="button" class="qty-btn" data-target="cassette" data-delta="1">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🌿 オプション（任意）</h2>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">室外機洗浄
+            <span class="opt-sub">天吊りの室外機の場合は、＋¥3,000の作業費がかかります（次の画面で選べます）</span>
+          </div>
+          <div class="qty-price">¥4,000 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="outdoor" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-outdoor-val">0</span>
+          <button type="button" class="qty-btn" data-target="outdoor" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">防カビ抗菌コート</div>
+          <div class="qty-price">¥3,000 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="mold" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-mold-val">0</span>
+          <button type="button" class="qty-btn" data-target="mold" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-label">
+          <div class="qty-title">ドレンホース洗浄</div>
+          <div class="qty-price">¥2,500 / 台</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-target="drain" data-delta="-1">−</button>
+          <span class="qty-value" id="qty-drain-val">0</span>
+          <button type="button" class="qty-btn" data-target="drain" data-delta="1">＋</button>
+        </div>
+      </div>
+
+      <div class="combo-box">
+        <div class="qty-row" id="row-combo2">
+          <div class="qty-label">
+            <div class="qty-title">おまとめ２点セット
+              <span class="opt-sub">防カビ抗菌コート＋室外機洗浄</span>
+            </div>
+            <div class="qty-price">¥5,000 / セット</div>
+          </div>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" data-target="combo2" data-delta="-1">−</button>
+            <span class="qty-value" id="qty-combo2-val">0</span>
+            <button type="button" class="qty-btn" data-target="combo2" data-delta="1">＋</button>
+          </div>
+        </div>
+
+        <div class="qty-row" id="row-combo3">
+          <div class="qty-label">
+            <div class="qty-title">おまとめ３点セット
+              <span class="opt-sub">防カビ抗菌コート＋室外機洗浄＋ドレンホース</span>
+            </div>
+            <div class="qty-price">¥7,000 / セット</div>
+          </div>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" data-target="combo3" data-delta="-1">−</button>
+            <span class="qty-value" id="qty-combo3-val">0</span>
+            <button type="button" class="qty-btn" data-target="combo3" data-delta="1">＋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="total-bar">
+      <div class="ttl-label">💰 概算お見積り金額</div>
+      <div class="ttl-amount">¥<span id="total1">0</span></div>
+      <div class="ttl-note">税込表示</div>
+    </div>
+
+    <p class="sub-note" id="step1-error" style="color:var(--danger);display:none;text-align:center;margin-bottom:10px;">
+      エアコンを1台以上選択してください
+    </p>
+
+    <button type="button" class="btn-primary" id="toStep2">ご予約情報の入力へ進む →</button>
+  </section>
+
+  <!-- ==================== STEP 2: ご予約情報 ==================== -->
+  <section class="step-panel" id="step2">
+
+    <div class="summary-mini">
+      <div>
+        <div class="lbl">💰 概算お見積り金額</div>
+        <div class="val">¥<span id="total2">0</span></div>
+      </div>
+      <div class="lbl">税込</div>
+    </div>
+
+    <form id="reserveForm" novalidate="">
+
+      <div class="card">
+        <h2>📝 お客様情報</h2>
+
+        <label class="field-label">お名前<span class="req">必須</span></label>
+        <input type="text" id="f-name" placeholder="お名前をご入力ください" required="">
+        <div class="field-error">お名前をご入力ください</div>
+
+        <label class="field-label">電話番号<span class="req">必須</span></label>
+        <input type="tel" id="f-tel" placeholder="例：09012345678" required="">
+        <div class="field-error">電話番号をご入力ください</div>
+
+        <label class="field-label">メールアドレス<span class="req">必須</span></label>
+        <input type="email" id="f-email" placeholder="メールアドレスをご入力ください" required="">
+        <div class="field-error">正しいメールアドレスをご入力ください</div>
+      </div>
+
+      <div class="card">
+        <h2>📍 ご住所</h2>
+
+        <label class="field-label">郵便番号<span class="req">必須</span></label>
+        <div class="zip-row">
+          <input type="text" id="f-zip" placeholder="例：5750022（ハイフンなし可）" maxlength="8" required="">
+          <button type="button" id="zipSearchBtn">住所検索</button>
+        </div>
+        <div class="zip-status" id="zipStatus"></div>
+        <div class="field-error" id="err-zip">郵便番号をご入力ください</div>
+
+        <label class="field-label">ご住所<span class="req">必須</span></label>
+        <input type="text" id="f-address" placeholder="ご住所（市区町村・町名）" required="">
+        <div class="field-error">ご住所をご入力ください</div>
+
+        <label class="field-label">番地・号<span class="req">必須</span></label>
+        <input type="text" id="f-banchi" placeholder="例：1-2-3" required="">
+        <div class="field-error">番地・号をご入力ください</div>
+
+        <label class="field-label">建物名・部屋番号<span class="opt-tag">任意</span></label>
+        <input type="text" id="f-building" placeholder="マンション・アパートの方はご入力ください">
+      </div>
+
+      <div class="card">
+        <h2>🚗 駐車スペースについて</h2>
+        <div class="notice-box">
+          <p>🚫 近隣の商業施設等の駐車場はご利用者専用のためお断りしております。</p>
+          <p>🚫 路上駐車は基本的にお断りしております。</p>
+          <p>🔄 お客様の自家用車との入れ替えをお願いする場合がございます。</p>
+          <p>💴 駐車料金が発生する場合は作業料金とは別途いただいております。</p>
+        </div>
+
+        <label class="field-label">駐車スペースの状況<span class="req">必須</span></label>
+        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-1"><span class="opt-text">🅿️ 駐車スペースあり</span></label>
+        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-2"><span class="opt-text">🔄 自家用車との入れ替えで対応可能</span></label>
+        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-3"><span class="opt-text">💴 近隣に有料駐車場あり（別途実費）</span></label>
+        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-4"><span class="opt-text">❌ 駐車スペースなし・不明</span></label>
+        <div class="field-error" id="err-parking">いずれか1つ以上お選びください</div>
+      </div>
+
+      <div class="card">
+        <h2>📅 ご希望の日程</h2>
+        <div class="notice-box pink">
+          <p>⏰ 時間は【到着時間の目安】です。施工完了時間ではございません。</p>
+        </div>
+        <div class="notice-box">
+          <p>⚠️ ご予約状況により、ご希望の日程でのご案内が難しい場合がございます。その際は、改めて別日程をご提案させていただきますので、あらかじめご了承ください。</p>
+        </div>
+
+        <!-- 第1希望 -->
+        <div class="pref-block" data-pref="1">
+          <h4>第1希望<span class="req">必須</span></h4>
+
+          <div class="radio-pair pref-mode-group">
+            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="anytime" checked=""> いつでも</label>
+            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="date"> 日付指定</label>
+            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="days"> 曜日指定</label>
+          </div>
+
+          <div class="pref-date-wrap" style="display:none;">
+            <label class="field-label">希望日</label>
+            <input type="date" class="pref-date">
+          </div>
+
+          <div class="pref-days-wrap" style="display:none;">
+            <p class="sub-note">曜日で指定：</p>
+            <div class="check-grid pref-days">
+              <label class="chip day"><input type="checkbox" value="日">日</label>
+              <label class="chip day"><input type="checkbox" value="月">月</label>
+              <label class="chip day"><input type="checkbox" value="火">火</label>
+              <label class="chip day"><input type="checkbox" value="水">水</label>
+              <label class="chip day"><input type="checkbox" value="木">木</label>
+              <label class="chip day"><input type="checkbox" value="金">金</label>
+              <label class="chip day"><input type="checkbox" value="土">土</label>
+            </div>
+          </div>
+
+          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
+
+          <label class="field-label">到着時間帯<span class="req">必須</span></label>
+          <select class="pref-time">
+            <option value="">選択してください</option>
+            <option value="いつでも">いつでも</option>
+            <option value="8時〜9時">8時〜9時</option>
+            <option value="12時〜14時">12時〜14時</option>
+            <option value="15時〜18時">15時〜18時</option>
+          </select>
+          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
+        </div>
+
+        <!-- 第2希望 -->
+        <div class="pref-block" data-pref="2">
+          <h4>第2希望<span class="req">必須</span></h4>
+
+          <div class="radio-pair pref-mode-group">
+            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="anytime" checked=""> いつでも</label>
+            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="date"> 日付指定</label>
+            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="days"> 曜日指定</label>
+          </div>
+
+          <div class="pref-date-wrap" style="display:none;">
+            <label class="field-label">希望日</label>
+            <input type="date" class="pref-date">
+          </div>
+
+          <div class="pref-days-wrap" style="display:none;">
+            <p class="sub-note">曜日で指定：</p>
+            <div class="check-grid pref-days">
+              <label class="chip day"><input type="checkbox" value="日">日</label>
+              <label class="chip day"><input type="checkbox" value="月">月</label>
+              <label class="chip day"><input type="checkbox" value="火">火</label>
+              <label class="chip day"><input type="checkbox" value="水">水</label>
+              <label class="chip day"><input type="checkbox" value="木">木</label>
+              <label class="chip day"><input type="checkbox" value="金">金</label>
+              <label class="chip day"><input type="checkbox" value="土">土</label>
+            </div>
+          </div>
+
+          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
+
+          <label class="field-label">到着時間帯<span class="req">必須</span></label>
+          <select class="pref-time">
+            <option value="">選択してください</option>
+            <option value="いつでも">いつでも</option>
+            <option value="8時〜9時">8時〜9時</option>
+            <option value="12時〜14時">12時〜14時</option>
+            <option value="15時〜18時">15時〜18時</option>
+          </select>
+          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
+        </div>
+
+        <!-- 第3希望 -->
+        <div class="pref-block" data-pref="3">
+          <h4>第3希望<span class="req">必須</span></h4>
+
+          <div class="radio-pair pref-mode-group">
+            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="anytime" checked=""> いつでも</label>
+            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="date"> 日付指定</label>
+            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="days"> 曜日指定</label>
+          </div>
+
+          <div class="pref-date-wrap" style="display:none;">
+            <label class="field-label">希望日</label>
+            <input type="date" class="pref-date">
+          </div>
+
+          <div class="pref-days-wrap" style="display:none;">
+            <p class="sub-note">曜日で指定：</p>
+            <div class="check-grid pref-days">
+              <label class="chip day"><input type="checkbox" value="日">日</label>
+              <label class="chip day"><input type="checkbox" value="月">月</label>
+              <label class="chip day"><input type="checkbox" value="火">火</label>
+              <label class="chip day"><input type="checkbox" value="水">水</label>
+              <label class="chip day"><input type="checkbox" value="木">木</label>
+              <label class="chip day"><input type="checkbox" value="金">金</label>
+              <label class="chip day"><input type="checkbox" value="土">土</label>
+            </div>
+          </div>
+
+          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
+
+          <label class="field-label">到着時間帯<span class="req">必須</span></label>
+          <select class="pref-time">
+            <option value="">選択してください</option>
+            <option value="いつでも">いつでも</option>
+            <option value="8時〜9時">8時〜9時</option>
+            <option value="12時〜14時">12時〜14時</option>
+            <option value="15時〜18時">15時〜18時</option>
+          </select>
+          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
+        </div>
+
+        <label class="option-row">
+          <input type="checkbox" id="f-notify">
+          <span class="opt-text">✅ 空き枠が出たら連絡希望</span>
+        </label>
+        <p class="sub-note">キャンセルや直前の空き枠が出た際に、LINEまたはメールで優先的にご案内します。</p>
+      </div>
+
+      <div id="unit-cards-wrap"></div>
+
+      <div class="card">
+        <h2>💳 お支払い方法</h2>
+        <label class="option-row"><input type="checkbox" id="pay-cash"><span class="opt-text">💴 現金</span></label>
+        <label class="option-row"><input type="checkbox" id="pay-card"><span class="opt-text">💳 クレジットカード</span></label>
+        <label class="option-row"><input type="checkbox" id="pay-paypay"><span class="opt-text">📱 PayPay</span></label>
+      </div>
+
+      <div class="card">
+        <h2>💬 ご不明な点・気になる汚れなど</h2>
+        <textarea id="f-notes" placeholder="ご不明な点や気になる汚れなどがございましたらご記入ください"></textarea>
+      </div>
+
+      <div class="card">
+        <h2>⚠️ ご注意事項</h2>
+        <div class="notice-box">
+          <p>※ 間接損害（営業補償・休業補償・逸失利益等）は対象外となります。</p>
+          <p>※製造から10年以上経過した機種は保証対象外となります。</p>
+          <p>※10年以上経ったエアコンに関しましては、万が一、清掃後に動かなくなった場合、修理が可能なのか、業者に来てもらう為の出張費等に関しましても、費用はお客様での負担となります。</p>
+        </div>
+      </div>
+
+      <div class="total-bar">
+        <div class="ttl-label">💰 概算お見積り金額（合計）</div>
+        <div class="ttl-amount">¥<span id="total2b">0</span></div>
+        <div class="ttl-note">税込・高所作業費・天吊り作業費含む</div>
+      </div>
+
+      <button type="submit" class="btn-primary">🌸 予約リクエストを送信する</button>
+      <button type="button" class="btn-secondary" id="backToStep1">← 見積もり内容に戻る</button>
+    </form>
+  </section>
+
+  <!-- ==================== STEP 3: 完了 ==================== -->
+  <section class="step-panel" id="step3">
+    <div class="card complete-box">
+      <div class="emoji">🎉</div>
+      <h2>予約リクエスト完了！</h2>
+      <p>ご予約ありがとうございます。<br>ご登録いただいた内容でスタッフより<br>ご連絡いたします。</p>
+
+      <div class="recap" id="recap"></div>
+
+      <button type="button" class="btn-secondary" id="restartBtn">🔄 はじめからやり直す</button>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<script src="js/form.js"></script>
+
+
+</body>
+</html>
