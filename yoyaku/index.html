@@ -125,6 +125,14 @@
   .after .btn { display: block; text-align: center; text-decoration: none; min-height: 0; padding: 12px; font-size: 15px; margin-top: 8px; }
   .after .btn.line { background: #06c755; color: #fff; }
   .after .btn.ghost { border: 1px solid var(--line); }
+  .share { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: left; }
+  .share b { display: block; font-size: 15px; }
+  .share .link { display: flex; gap: 8px; margin-top: 8px; }
+  .share .link input { font-size: 14px; }
+  .share .link button, .share .line { white-space: nowrap; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .share .link button { background: var(--orange); color: #fff; }
+  .share .line { display: inline-block; margin-top: 8px; background: #06c755; color: #fff; text-decoration: none; }
+  .share p { font-size: 13px; color: var(--muted); margin: 8px 0 0; font-weight: 400; }
   footer { text-align: center; font-size: 13px; color: #fff; padding: 8px 16px 32px; }
   footer a { color: #fff; }
 
@@ -158,6 +166,7 @@
   .bk .note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
   .bk .warn { font-size: 13px; color: #b4532a; margin: 4px 0 0; }
   .bk .ng { background: #fbe9e2; color: #b4532a; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+  .bk .refnote { background: #fdeee2; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-top: 8px; }
   .bk .caution { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
   .bk .caution p { margin: 2px 0; }
   .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
@@ -225,7 +234,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
           <div class="ctr"><button type="button" data-k="combo2" data-d="-1" aria-label="おまとめ2点を減らす">−</button><output id="o_combo2">0</output><button type="button" data-k="combo2" data-d="1" aria-label="おまとめ2点を増やす">＋</button></div></div>
         <div class="row-item" style="border-bottom:0"><div class="t"><b>おまとめ3点</b><span>防カビ・抗菌コート＋室外機＋ドレンホース｜7,000円/台</span></div>
           <div class="ctr"><button type="button" data-k="combo3" data-d="-1" aria-label="おまとめ3点を減らす">−</button><output id="o_combo3">0</output><button type="button" data-k="combo3" data-d="1" aria-label="おまとめ3点を増やす">＋</button></div></div>
-        <div class="est"><b>概算金額</b><div class="v">¥<span id="e_total">8,000</span><small> 円（税込・駐車場代別）</small></div></div>
+        <div class="est"><b>概算金額</b><div class="v">¥<span id="e_total">8,000</span><small> 円（税込・駐車場代別）</small></div><p class="note" id="e_ref" hidden style="flex-basis:100%;margin:0">紹介割引 −1,000円 が入っています</p></div>
         <p class="note">オプションは、当日スタッフと相談してから決めていただいても大丈夫です。</p>
 
         <h3 style="margin-top:20px">2. エアコンごとに教えてください</h3>
@@ -286,6 +295,10 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
         <select id="f_how" name="how"><option value="">選んでください</option><option>Googleで検索</option><option>Googleマップ</option><option>Instagram</option><option>LINE</option><option>ミツモア</option><option>おうちにプロ</option><option>ご紹介</option><option>以前に利用した</option><option>チラシ・その他</option></select>
         <label for="f_note">ご不明な点・気になる汚れなど <small>任意</small></label>
         <textarea id="f_note" name="note" placeholder="気になる症状、ベッドの上のエアコンかどうか、ペットの有無 など"></textarea>
+        <label for="f_ref">紹介コード <small>任意・ご紹介の方は1,000円引き</small></label>
+        <input id="f_ref" name="ref" autocomplete="off" placeholder="例：R261120-101530">
+        <div class="refnote" id="refnote" hidden></div>
+        <p class="note">紹介コードは、紹介してくれた方の受付番号です。割引は1回のご予約につき1,000円で、紹介コードはお店で確認します。</p>
         <div class="hp" aria-hidden="true"><label for="f_website">（入力しないでください）</label><input id="f_website" name="website" tabindex="-1" autocomplete="off"></div>
 
         <div class="caution">
@@ -334,7 +347,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     { k: 'business', label: 'エアコンクリーニング', sub: '店舗・事務所（業務用壁掛け・天カセ）' }
   ];
 
-  // ---------- どこから来たか ----------
+  // ---------- どこから来たか・紹介コード ----------
   var q = new URLSearchParams(location.search);
   var source = (function () {
     try {
@@ -350,9 +363,21 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     } catch (e) {}
     return '直接';
   })();
+  // 紹介リンク（?ref=紹介コード）で来た方は、紹介コードを自動で入れる。90日間このブラウザに覚えておく
+  var refFromUrl = (function () {
+    var KEY = 'nest_ref', DAYS = 90, code = String(q.get('ref') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 30);
+    try {
+      if (code) localStorage.setItem(KEY, JSON.stringify({ code: code, at: Date.now() }));
+      else {
+        var v = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (v && v.code && Date.now() - v.at < DAYS * 864e5) code = String(v.code).slice(0, 30);
+      }
+    } catch (e) {}
+    return code;
+  })();
 
   var MSG = {
-    first: 'ご覧いただきありがとうございます。クリーニングネストです。エアコンクリーニングのご予約でよろしいですか？',
+    first: refFromUrl ? 'ご紹介ありがとうございます。クリーニングネストです。エアコンクリーニングのご予約でよろしいですか？' : 'ご覧いただきありがとうございます。クリーニングネストです。エアコンクリーニングのご予約でよろしいですか？',
     yes: 'ありがとうございます。お手数ですが、ご予約フォームへのご入力をお願いいたします。',
     no: 'ごゆっくりご覧ください。気になることは、LINEやお電話でもお気軽にどうぞ。'
   };
@@ -435,16 +460,25 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   function acCount() { return st.normal + st.selfclean + st.business + st.cassette; }
   function outdoorCount() { return st.outdoor + st.combo2 + st.combo3; } // おまとめにも室外機が入る
   function base() { var t = 0; Object.keys(PRICE).forEach(function (k) { t += st[k] * PRICE[k]; }); return t; }
+  // 紹介コード（紹介した方の受付番号）が入っていれば、1回のご予約につき1,000円引き
+  var REF_DISCOUNT = 1000;
+  function refCode() { return ($('f_ref').value || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 30); }
+  function refValid() { return /^R\d{6}-\d{6}$/.test(refCode()); }
   function total() {
     var high = document.querySelectorAll('.u-height[value="high"]:checked').length;
     var hang = document.querySelectorAll('.o-hang[value="hang"]:checked').length;
-    return base() + (high + hang) * HIGH;
+    var t = base() + (high + hang) * HIGH;
+    return t > 0 && refValid() ? Math.max(0, t - REF_DISCOUNT) : t;
   }
   function maxOf(k) { return 20; }
   function renderEst() {
     Object.keys(st).forEach(function (k) { $('o_' + k).textContent = st[k]; });
     $('e_total').textContent = yen(total());
     $('hdrTotal').textContent = yen(total());
+    $('e_ref').hidden = !refValid();
+    var c = refCode();
+    $('refnote').hidden = !c;
+    $('refnote').textContent = !c ? '' : refValid() ? 'ご紹介ありがとうございます。紹介割引（1,000円引き）が概算に入っています。' : '紹介コードの形が違うようです（例：R261120-101530）。このままでも送れますが、割引はお店で確認してからのご案内になります。';
     document.querySelectorAll('.bk .ctr button').forEach(function (b) {
       var k = b.dataset.k, d = +b.dataset.d;
       b.disabled = d < 0 ? st[k] <= 0 : st[k] >= maxOf(k);
@@ -509,12 +543,15 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     });
   });
 
+  $('f_ref').addEventListener('input', renderEst);
+
   function resetForm() {
     $('form').reset();
     st = Object.assign({}, ZERO);
     unitData = {};
     $('formMsg').hidden = true;
     var sb = $('form').querySelector('button[type=submit]'); sb.disabled = false; sb.textContent = 'この内容で予約する';
+    if (refFromUrl) $('f_ref').value = refFromUrl;
     $('zipMsg').textContent = '';
     renderAll();
   }
@@ -593,9 +630,11 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       height.push('室外機' + j + '台目：' + (hc && hc.value === 'hang' ? '天吊り（作業費 +¥3,000）' : '地面・ベランダ置き（通常）'));
     }
     var pref = function (n) { var r = document.querySelector('input[name=time' + n + ']:checked'); return v('date' + n) + '（' + (r ? r.value : 'いつでも') + '）'; };
+    var ref = refCode();
     var housing = document.querySelector('input[name=housing]:checked').value;
     var add = ['【お住まい】' + housing];
     if (v('f_how')) add.push('【きっかけ】' + v('f_how'));
+    if (ref) add.push('【紹介コード】' + ref + (refValid() ? '（紹介割引 −1,000円を概算に反映）' : '（形が違うため割引は未反映・要確認）'));
     var notes = add.join('\n') + (v('f_note') ? '\n' + v('f_note') : '');
     var data = {
       website: v('f_website'),
@@ -605,8 +644,9 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       qtyOutdoor: st.outdoor, qtyMold: st.mold, qtyDrain: st.drain, qtyCombo2: st.combo2, qtyCombo3: st.combo3,
       location: loc.join('\n'), model: model.join('\n'), year: year.join('\n'), heightLabel: height.join('\n'),
       parking: v('f_parking'), pref1: pref(1), pref2: pref(2), pref3: pref(3), pay: v('f_pay'),
-      notes: notes, grand: total(), notify: $('f_notify').checked, housing: housing,
-      source: source,
+      notes: notes, grand: total(), notify: $('f_notify').checked, ref: ref, housing: housing,
+      // 紹介コードは流入元にも残す（シートの「流入元」列で見分けられるように）
+      source: (ref ? 'ref=' + ref + ' ' : '') + source,
       device: /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) ? 'スマホ' : 'PC'
     };
     var btn = $('form').querySelector('button[type=submit]');
@@ -639,9 +679,28 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       + '<a class="btn line" href="' + CONFIG.LINE_URL + '" target="_blank" rel="noopener">LINEで相談する</a>'
       + '<a class="btn ghost" href="tel:' + CONFIG.PHONE.replace(/-/g, '') + '">電話する（' + CONFIG.PHONE + '）</a></div>';
     $('doneMsg').innerHTML = html;
+    if (okId) showShare(id);
     $('donePanel').hidden = false;
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   }
+  // 予約した方に、ご自身の紹介リンクを表示（紹介コード＝受付番号）
+  function showShare(id) {
+    var url = location.origin + location.pathname + '?ref=' + encodeURIComponent(id);
+    var text = 'エアコンクリーニングはクリーニングネストさんに頼みました。このリンクから予約すると1,000円引きになります → ' + url;
+    var box = document.createElement('div');
+    box.className = 'share';
+    box.innerHTML = '<b>ご家族やお知り合いに紹介しませんか</b>'
+      + '<p>このリンクから予約すると、ご紹介された方は1,000円引きになります。</p>'
+      + '<div class="link"><input readonly value="' + esc(url) + '" aria-label="あなたの紹介リンク"><button type="button">コピー</button></div>'
+      + '<a class="line" href="https://line.me/R/share?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">LINEで送る</a>'
+      + '<p>あなたの紹介コード：<b style="display:inline">' + esc(id) + '</b></p>';
+    box.querySelector('button').addEventListener('click', function (e) {
+      try { navigator.clipboard.writeText(url).then(function () { e.target.textContent = 'コピーしました'; }, function () { box.querySelector('input').select(); }); }
+      catch (_) { box.querySelector('input').select(); }
+    });
+    $('doneMsg').appendChild(box);
+  }
+
   start();
 })();
 </script>
