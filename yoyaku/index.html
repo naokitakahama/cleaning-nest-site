@@ -1,424 +1,688 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>エアコンクリーニング お見積もり・ご予約フォーム</title>
-<link rel="stylesheet" href="css/style.css">
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>エアコンクリーニングのご予約｜クリーニングネスト</title>
+<meta name="description" content="クリーニングネスト（西宮市）のエアコンクリーニングご予約ページ。台数とオプションを選ぶと概算が出ます。送信後すぐに確認メールが届きます。">
+<link rel="icon" href="../favicon.ico">
+<style>
+  :root {
+    --chat-bg: #8fa9d1;
+    --bubble-in: #ffffff;
+    --bubble-out: #8de055;
+    --text: #1f2328;
+    --muted: #5b6470;
+    --accent: #06c755;
+    --accent-dark: #05a647;
+    --orange: #e8590c;
+    --panel: #ffffff;
+    --line: #e3e6ea;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+    color: var(--text);
+    background: var(--chat-bg);
+    font-size: 17px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  header {
+    position: sticky; top: 0; z-index: 2;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+    background: #2b3a55; color: #fff; padding: 10px 16px;
+  }
+  header .name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto; color: #fff; text-decoration: none; }
+  header .reset { white-space: nowrap; flex: 0 0 auto; }
+  /* フォームを開いている間、帯に概算をずっと出す */
+  .hdr-est { order: 3; flex: 1 0 100%; display: flex; align-items: baseline; justify-content: center; gap: 8px; background: #fff; color: var(--orange); border-radius: 14px; padding: 6px 12px; font-weight: 900; font-size: 34px; line-height: 1.2; white-space: nowrap; }
+  .hdr-est small { font-size: 15px; color: #33241c; font-weight: 700; }
+  .hdr-est .tax { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .reset {
+    border: 1px solid rgba(255,255,255,.6); background: transparent; color: #fff;
+    border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer;
+  }
+  .reset:active { background: rgba(255,255,255,.15); }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 32px; }
+
+  /* 吹き出し */
+  .chat { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: flex-end; gap: 8px; animation: pop .35s ease-out both; }
+  .row.out { justify-content: flex-end; }
+  .avatar {
+    flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%;
+    background: #2b3a55; color: #fff; display: grid; place-items: center;
+    font-size: 12px; font-weight: 700; letter-spacing: .02em;
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  }
+  .bubble {
+    position: relative; max-width: 78%;
+    padding: 10px 14px; border-radius: 18px;
+    background: var(--bubble-in); box-shadow: 0 1px 1px rgba(0,0,0,.08);
+    word-break: break-word;
+  }
+  .row.in .bubble { border-top-left-radius: 4px; }
+  .row.out .bubble { background: var(--bubble-out); border-top-right-radius: 4px; }
+  .typing { display: inline-flex; gap: 4px; padding: 4px 2px; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: #9aa3ad; animation: blink 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; }
+  .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .typing i { animation: none; opacity: .6; }
+  }
+
+  /* はい／いいえ */
+  .choices { display: flex; gap: 12px; justify-content: center; margin: 20px 0 4px; }
+  .btn {
+    appearance: none; border: 0; cursor: pointer;
+    min-height: 48px; padding: 10px 22px; border-radius: 999px;
+    font-size: 17px; font-weight: 700; font-family: inherit;
+  }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary:active { background: var(--accent-dark); }
+  .btn.ghost { background: #fff; color: var(--text); }
+  .btn.wide { width: 100%; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .choices .btn.wide { max-width: 360px; }
+  .choices .btn { flex: 1 1 0; max-width: 200px; }
+
+  /* メニュー・フォーム・完了 */
+  .panel {
+    background: var(--panel); border-radius: 16px; padding: 16px;
+    margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    animation: pop .35s ease-out both; transform-origin: 50% 0;
+  }
+  .panel h2 { font-size: 18px; margin: 0 0 12px; }
+  .menu { list-style: none; margin: 0; padding: 0; }
+  .menu li {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 0; border-top: 1px solid var(--line);
+  }
+  .menu li:first-child { border-top: 0; }
+  .menu .label { font-weight: 600; }
+  .menu .sub { font-size: 13px; color: var(--muted); }
+  .menu .btn { min-height: 40px; padding: 6px 14px; font-size: 14px; flex: 0 0 auto; }
+  .menu-links { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .menu-links a { display: block; text-align: center; text-decoration: none; font-size: 15px; min-height: 0; padding: 12px; }
+  label { display: block; font-weight: 600; margin: 12px 0 4px; }
+  input, select, textarea {
+    width: 100%; font-size: 17px; padding: 10px 12px;
+    border: 1px solid #c5ccd4; border-radius: 10px; background: #fff; color: var(--text); font-family: inherit;
+  }
+  .done { text-align: center; padding: 28px 16px; }
+  .done .mark { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 34px; font-weight: 900; }
+  .done #doneTitle { font-size: 22px; font-weight: 700; margin: 14px 0 0; }
+  .donemsg { font-size: 15px; text-align: left; margin-top: 12px; }
+  .donemsg .rid { text-align: center; font-size: 15px; }
+  .donemsg .rid b { display: block; font-size: 24px; letter-spacing: .04em; }
+  .after { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: left; }
+  .after b { display: block; font-size: 15px; }
+  .after p { font-size: 14px; color: var(--muted); margin: 6px 0 10px; }
+  .after .btn { display: block; text-align: center; text-decoration: none; min-height: 0; padding: 12px; font-size: 15px; margin-top: 8px; }
+  .after .btn.line { background: #06c755; color: #fff; }
+  .after .btn.ghost { border: 1px solid var(--line); }
+  .share { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: left; }
+  .share b { display: block; font-size: 15px; }
+  .share .link { display: flex; gap: 8px; margin-top: 8px; }
+  .share .link input { font-size: 14px; }
+  .share .link button, .share .line { white-space: nowrap; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .share .link button { background: var(--orange); color: #fff; }
+  .share .line { display: inline-block; margin-top: 8px; background: #06c755; color: #fff; text-decoration: none; }
+  .share p { font-size: 13px; color: var(--muted); margin: 8px 0 0; font-weight: 400; }
+  footer { text-align: center; font-size: 13px; color: #fff; padding: 8px 16px 32px; }
+  footer a { color: #fff; }
+
+  /* 予約フォーム */
+  .bk h3 { font-size: 16px; margin: 4px 0 8px; padding-bottom: 6px; border-bottom: 2px solid #fdeee2; }
+  .bk .row-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .bk .row-item .t b { display: block; font-size: 15px; }
+  .bk .row-item .t span { font-size: 13px; color: var(--muted); }
+  .bk .ctr { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .bk .ctr button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 18px; font-weight: 700; color: var(--orange); cursor: pointer; }
+  .bk .ctr button:disabled { opacity: .3; cursor: default; }
+  .bk .ctr output { min-width: 28px; text-align: center; font-weight: 800; font-size: 17px; }
+  .bk .est { background: #fdeee2; border-radius: 12px; padding: 12px 16px; margin: 14px 0 4px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+  .bk .est .v { font-size: 26px; font-weight: 900; color: var(--orange); }
+  .bk .est .v small { font-size: 12px; font-weight: 600; color: var(--text); }
+  .bk label small { font-weight: 400; color: var(--muted); }
+  .bk .req { background: #e03131; color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
+  .bk textarea { min-height: 90px; font-size: 16px; }
+  .bk .radios { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .bk .radios label, .bk .chks label { display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 600; font-size: 14px; }
+  .bk .radios input, .bk .chks input { width: 18px; height: 18px; padding: 0; accent-color: var(--orange); flex: 0 0 auto; }
+  .bk .chks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+  .bk .chks label { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .bk .dateblk, .bk .unit { background: #fff7f5; border-radius: 10px; padding: 2px 12px 12px; margin-top: 12px; }
+  .bk .unit h4 { margin: 10px 0 0; font-size: 15px; }
+  .bk .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) { .bk .g2, .bk .chks { grid-template-columns: 1fr; } }
+  .bk .zip { display: flex; gap: 8px; }
+  .bk .zip button { flex: 0 0 auto; border: 1px solid var(--orange); background: #fff; color: var(--orange); border-radius: 10px; padding: 0 14px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .bk .zipmsg { font-size: 13px; color: var(--muted); margin: 4px 0 0; min-height: 1em; }
+  .bk .note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .bk .warn { font-size: 13px; color: #b4532a; margin: 4px 0 0; }
+  .bk .ng { background: #fbe9e2; color: #b4532a; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+  .bk .refnote { background: #fdeee2; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-top: 8px; }
+  .bk .caution { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
+  .bk .caution p { margin: 2px 0; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .row, .panel { animation: none; } }
+</style>
 </head>
 <body>
-<div class="app">
-
-  <header class="topbar">
-    <div class="logo">🌸 エアコンクリーニング お見積もり・ご予約</div>
-    <div class="steps">
-      <div class="step-item active" data-step="1"><span class="num">1</span><span class="label">お見積り</span></div>
-      <div class="step-item" data-step="2"><span class="num">2</span><span class="label">ご予約情報</span></div>
-      <div class="step-item" data-step="3"><span class="num">3</span><span class="label">完了</span></div>
-    </div>
+  <header>
+    <a class="name" href="../">クリーニングネスト</a>
+    <span class="hdr-est" id="hdrEst" hidden aria-live="polite"><small>概算</small><span>¥<b id="hdrTotal">8,000</b></span><span class="tax">税込</span></span>
+    <button type="button" class="reset" id="reset">選び直し</button>
   </header>
 
   <main>
+    <div class="chat" id="chat" aria-live="polite"></div>
 
-  <!-- ==================== STEP 1: 見積もり ==================== -->
-  <section class="step-panel active" id="step1">
-
-    <div class="card">
-      <h2>❄️ エアコンの台数を選んでください</h2>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">通常壁掛けエアコン</div>
-          <div class="qty-price">¥8,000 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="normal" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-normal-val">0</span>
-          <button type="button" class="qty-btn" data-target="normal" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">お掃除機能付きエアコン</div>
-          <div class="qty-price">¥12,000 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="selfclean" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-selfclean-val">0</span>
-          <button type="button" class="qty-btn" data-target="selfclean" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">業務用壁掛けエアコン</div>
-          <div class="qty-price">¥15,000 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="business" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-business-val">0</span>
-          <button type="button" class="qty-btn" data-target="business" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">天カセエアコン</div>
-          <div class="qty-price">¥29,800 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="cassette" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-cassette-val">0</span>
-          <button type="button" class="qty-btn" data-target="cassette" data-delta="1">＋</button>
-        </div>
-      </div>
+    <div class="choices" id="choices" hidden>
+      <button type="button" class="btn primary" id="yes">はい</button>
+      <button type="button" class="btn ghost" id="no">いいえ</button>
     </div>
 
-    <div class="card">
-      <h2>🌿 オプション（任意）</h2>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">室外機洗浄
-            <span class="opt-sub">天吊りの室外機の場合は、＋¥3,000の作業費がかかります（次の画面で選べます）</span>
-          </div>
-          <div class="qty-price">¥4,000 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="outdoor" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-outdoor-val">0</span>
-          <button type="button" class="qty-btn" data-target="outdoor" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">防カビ抗菌コート</div>
-          <div class="qty-price">¥3,000 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="mold" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-mold-val">0</span>
-          <button type="button" class="qty-btn" data-target="mold" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="qty-row">
-        <div class="qty-label">
-          <div class="qty-title">ドレンホース洗浄</div>
-          <div class="qty-price">¥2,500 / 台</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-target="drain" data-delta="-1">−</button>
-          <span class="qty-value" id="qty-drain-val">0</span>
-          <button type="button" class="qty-btn" data-target="drain" data-delta="1">＋</button>
-        </div>
-      </div>
-
-      <div class="combo-box">
-        <div class="qty-row" id="row-combo2">
-          <div class="qty-label">
-            <div class="qty-title">おまとめ２点セット
-              <span class="opt-sub">防カビ抗菌コート＋室外機洗浄</span>
-            </div>
-            <div class="qty-price">¥5,000 / セット</div>
-          </div>
-          <div class="qty-control">
-            <button type="button" class="qty-btn" data-target="combo2" data-delta="-1">−</button>
-            <span class="qty-value" id="qty-combo2-val">0</span>
-            <button type="button" class="qty-btn" data-target="combo2" data-delta="1">＋</button>
-          </div>
-        </div>
-
-        <div class="qty-row" id="row-combo3">
-          <div class="qty-label">
-            <div class="qty-title">おまとめ３点セット
-              <span class="opt-sub">防カビ抗菌コート＋室外機洗浄＋ドレンホース</span>
-            </div>
-            <div class="qty-price">¥7,000 / セット</div>
-          </div>
-          <div class="qty-control">
-            <button type="button" class="qty-btn" data-target="combo3" data-delta="-1">−</button>
-            <span class="qty-value" id="qty-combo3-val">0</span>
-            <button type="button" class="qty-btn" data-target="combo3" data-delta="1">＋</button>
-          </div>
-        </div>
-      </div>
+    <div class="choices" id="toForm" hidden>
+      <button type="button" class="btn primary wide" id="goForm">ご予約フォームへ進む</button>
     </div>
 
-    <div class="total-bar">
-      <div class="ttl-label">💰 概算お見積り金額</div>
-      <div class="ttl-amount">¥<span id="total1">0</span></div>
-      <div class="ttl-note">税込表示</div>
-    </div>
-
-    <p class="sub-note" id="step1-error" style="color:var(--danger);display:none;text-align:center;margin-bottom:10px;">
-      エアコンを1台以上選択してください
-    </p>
-
-    <button type="button" class="btn-primary" id="toStep2">ご予約情報の入力へ進む →</button>
-  </section>
-
-  <!-- ==================== STEP 2: ご予約情報 ==================== -->
-  <section class="step-panel" id="step2">
-
-    <div class="summary-mini">
-      <div>
-        <div class="lbl">💰 概算お見積り金額</div>
-        <div class="val">¥<span id="total2">0</span></div>
+    <section class="panel" id="menuPanel" hidden>
+      <h2>メニュー</h2>
+      <ul class="menu" id="menuList"></ul>
+      <div class="menu-links">
+        <a class="btn ghost" href="../#price">料金を見る</a>
+        <a class="btn ghost" href="https://violet-jackrabbit-ab4.notion.site/395837cde6f180bbb18dea3d5d70e028" target="_blank" rel="noopener">よくあるご質問を見る</a>
+        <a class="btn primary" href="https://lin.ee/PXCwUj2" target="_blank" rel="noopener">LINEで相談する</a>
       </div>
-      <div class="lbl">税込</div>
-    </div>
+    </section>
 
-    <form id="reserveForm" novalidate="">
+    <section class="panel bk" id="formPanel" hidden>
+      <h2>ご予約フォーム</h2>
+      <p class="note" style="margin:0 0 12px">台数とオプションを選ぶと概算が出ます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
+      <form id="form" novalidate>
+        <h3>1. 台数とオプションを選ぶ</h3>
+        <div class="row-item"><div class="t"><b>壁掛けエアコン（通常）</b><span>8,000円/台</span></div>
+          <div class="ctr"><button type="button" data-k="normal" data-d="-1" aria-label="壁掛けエアコン（通常）を減らす">−</button><output id="o_normal">1</output><button type="button" data-k="normal" data-d="1" aria-label="壁掛けエアコン（通常）を増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>お掃除機能付きエアコン</b><span>12,000円/台</span></div>
+          <div class="ctr"><button type="button" data-k="selfclean" data-d="-1" aria-label="お掃除機能付きエアコンを減らす">−</button><output id="o_selfclean">0</output><button type="button" data-k="selfclean" data-d="1" aria-label="お掃除機能付きエアコンを増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>業務用壁掛けエアコン</b><span>15,000円/台｜店舗・事務所の壁掛けタイプ</span></div>
+          <div class="ctr"><button type="button" data-k="business" data-d="-1" aria-label="業務用壁掛けエアコンを減らす">−</button><output id="o_business">0</output><button type="button" data-k="business" data-d="1" aria-label="業務用壁掛けエアコンを増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>天井埋め込み（天カセ）</b><span>29,800円/台</span></div>
+          <div class="ctr"><button type="button" data-k="cassette" data-d="-1" aria-label="天井埋め込み（天カセ）を減らす">−</button><output id="o_cassette">0</output><button type="button" data-k="cassette" data-d="1" aria-label="天井埋め込み（天カセ）を増やす">＋</button></div></div>
+        <p style="font-weight:700;margin:14px 0 2px">オプション（任意）</p>
+        <div class="row-item"><div class="t"><b>室外機の洗浄</b><span>4,000円/台｜天吊りの室外機は＋3,000円（下で選べます）</span></div>
+          <div class="ctr"><button type="button" data-k="outdoor" data-d="-1" aria-label="室外機の洗浄を減らす">−</button><output id="o_outdoor">0</output><button type="button" data-k="outdoor" data-d="1" aria-label="室外機の洗浄を増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>防カビ・抗菌コート</b><span>3,000円/台</span></div>
+          <div class="ctr"><button type="button" data-k="mold" data-d="-1" aria-label="防カビ・抗菌コートを減らす">−</button><output id="o_mold">0</output><button type="button" data-k="mold" data-d="1" aria-label="防カビ・抗菌コートを増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>ドレンホース洗浄</b><span>2,500円/台｜水漏れ・においの予防に</span></div>
+          <div class="ctr"><button type="button" data-k="drain" data-d="-1" aria-label="ドレンホース洗浄を減らす">−</button><output id="o_drain">0</output><button type="button" data-k="drain" data-d="1" aria-label="ドレンホース洗浄を増やす">＋</button></div></div>
+        <div class="row-item"><div class="t"><b>おまとめ2点</b><span>防カビ・抗菌コート＋室外機｜5,000円/台</span></div>
+          <div class="ctr"><button type="button" data-k="combo2" data-d="-1" aria-label="おまとめ2点を減らす">−</button><output id="o_combo2">0</output><button type="button" data-k="combo2" data-d="1" aria-label="おまとめ2点を増やす">＋</button></div></div>
+        <div class="row-item" style="border-bottom:0"><div class="t"><b>おまとめ3点</b><span>防カビ・抗菌コート＋室外機＋ドレンホース｜7,000円/台</span></div>
+          <div class="ctr"><button type="button" data-k="combo3" data-d="-1" aria-label="おまとめ3点を減らす">−</button><output id="o_combo3">0</output><button type="button" data-k="combo3" data-d="1" aria-label="おまとめ3点を増やす">＋</button></div></div>
+        <div class="est"><b>概算金額</b><div class="v">¥<span id="e_total">8,000</span><small> 円（税込・駐車場代別）</small></div></div>
+        <p class="note">オプションは、当日スタッフと相談してから決めていただいても大丈夫です。</p>
 
-      <div class="card">
-        <h2>📝 お客様情報</h2>
+        <h3 style="margin-top:20px">2. エアコンごとに教えてください</h3>
+        <p class="note" style="margin-top:0">型番と製造年は、エアコン本体の横や下のシールに書いてあります。製造から10年以上経過した機種は保証の対象外です。</p>
+        <div id="units"></div>
 
-        <label class="field-label">お名前<span class="req">必須</span></label>
-        <input type="text" id="f-name" placeholder="お名前をご入力ください" required="">
-        <div class="field-error">お名前をご入力ください</div>
-
-        <label class="field-label">電話番号<span class="req">必須</span></label>
-        <input type="tel" id="f-tel" placeholder="例：09012345678" required="">
-        <div class="field-error">電話番号をご入力ください</div>
-
-        <label class="field-label">メールアドレス<span class="req">必須</span></label>
-        <input type="email" id="f-email" placeholder="メールアドレスをご入力ください" required="">
-        <div class="field-error">正しいメールアドレスをご入力ください</div>
-      </div>
-
-      <div class="card">
-        <h2>📍 ご住所</h2>
-
-        <label class="field-label">郵便番号<span class="req">必須</span></label>
-        <div class="zip-row">
-          <input type="text" id="f-zip" placeholder="例：5750022（ハイフンなし可）" maxlength="8" required="">
-          <button type="button" id="zipSearchBtn">住所検索</button>
+        <h3 style="margin-top:20px">3. ご予約情報を入力する</h3>
+        <div class="g2">
+          <div><label for="f_name">お名前 <small class="req">必須</small></label><input type="text" id="f_name" name="name" autocomplete="name"></div>
+          <div><label for="f_tel">電話番号 <small class="req">必須</small></label><input type="tel" id="f_tel" name="tel" autocomplete="tel" placeholder="例：09012345678"></div>
         </div>
-        <div class="zip-status" id="zipStatus"></div>
-        <div class="field-error" id="err-zip">郵便番号をご入力ください</div>
-
-        <label class="field-label">ご住所<span class="req">必須</span></label>
-        <input type="text" id="f-address" placeholder="ご住所（市区町村・町名）" required="">
-        <div class="field-error">ご住所をご入力ください</div>
-
-        <label class="field-label">番地・号<span class="req">必須</span></label>
-        <input type="text" id="f-banchi" placeholder="例：1-2-3" required="">
-        <div class="field-error">番地・号をご入力ください</div>
-
-        <label class="field-label">建物名・部屋番号<span class="opt-tag">任意</span></label>
-        <input type="text" id="f-building" placeholder="マンション・アパートの方はご入力ください">
-      </div>
-
-      <div class="card">
-        <h2>🚗 駐車スペースについて</h2>
-        <div class="notice-box">
-          <p>🚫 近隣の商業施設等の駐車場はご利用者専用のためお断りしております。</p>
-          <p>🚫 路上駐車は基本的にお断りしております。</p>
-          <p>🔄 お客様の自家用車との入れ替えをお願いする場合がございます。</p>
-          <p>💴 駐車料金が発生する場合は作業料金とは別途いただいております。</p>
+        <label for="f_email">メールアドレス <small class="req">必須</small> <small>確認メールの送付先</small></label>
+        <input type="email" id="f_email" name="email" autocomplete="email">
+        <label for="f_zip">郵便番号 <small class="req">必須</small></label>
+        <div class="zip"><input type="text" id="f_zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="例：6638202"><button type="button" id="zipBtn">住所を検索</button></div>
+        <p class="zipmsg" id="zipMsg"></p>
+        <label for="f_address">ご住所（市区町村・町名） <small class="req">必須</small></label><input type="text" id="f_address" name="address" autocomplete="address-level2">
+        <div class="g2">
+          <div><label for="f_banchi">番地・号 <small class="req">必須</small></label><input type="text" id="f_banchi" name="banchi" autocomplete="address-line1" placeholder="例：1-2-3"></div>
+          <div><label for="f_building">建物名・部屋番号 <small>任意</small></label><input type="text" id="f_building" name="building" autocomplete="address-line2"></div>
         </div>
+        <label>お住まいのタイプ <small class="req">必須</small></label>
+        <div class="radios" id="housing"><label><input type="radio" name="housing" value="戸建て">戸建て</label><label><input type="radio" name="housing" value="マンション・アパート">マンション・アパート</label><label><input type="radio" name="housing" value="店舗・事務所など">店舗・事務所など</label></div>
 
-        <label class="field-label">駐車スペースの状況<span class="req">必須</span></label>
-        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-1"><span class="opt-text">🅿️ 駐車スペースあり</span></label>
-        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-2"><span class="opt-text">🔄 自家用車との入れ替えで対応可能</span></label>
-        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-3"><span class="opt-text">💴 近隣に有料駐車場あり（別途実費）</span></label>
-        <label class="option-row"><input type="checkbox" class="parking-chk" id="pk-4"><span class="opt-text">❌ 駐車スペースなし・不明</span></label>
-        <div class="field-error" id="err-parking">いずれか1つ以上お選びください</div>
-      </div>
-
-      <div class="card">
-        <h2>📅 ご希望の日程</h2>
-        <div class="notice-box pink">
-          <p>⏰ 時間は【到着時間の目安】です。施工完了時間ではございません。</p>
+        <div class="dateblk">
+          <label for="date1">作業日 第1希望 <small class="req">必須</small></label>
+          <input type="date" id="date1" name="date1">
+          <label>到着時間帯 <small class="req">必須</small></label>
+          <div class="radios"><label><input type="radio" name="time1" value="いつでも" checked>いつでも</label><label><input type="radio" name="time1" value="8時〜9時">8時〜9時</label><label><input type="radio" name="time1" value="12時〜14時">12時〜14時</label><label><input type="radio" name="time1" value="15時〜18時">15時〜18時</label></div>
         </div>
-        <div class="notice-box">
-          <p>⚠️ ご予約状況により、ご希望の日程でのご案内が難しい場合がございます。その際は、改めて別日程をご提案させていただきますので、あらかじめご了承ください。</p>
+        <div class="dateblk">
+          <label for="date2">作業日 第2希望 <small class="req">必須</small></label>
+          <input type="date" id="date2" name="date2">
+          <label>到着時間帯 <small class="req">必須</small></label>
+          <div class="radios"><label><input type="radio" name="time2" value="いつでも" checked>いつでも</label><label><input type="radio" name="time2" value="8時〜9時">8時〜9時</label><label><input type="radio" name="time2" value="12時〜14時">12時〜14時</label><label><input type="radio" name="time2" value="15時〜18時">15時〜18時</label></div>
         </div>
-
-        <!-- 第1希望 -->
-        <div class="pref-block" data-pref="1">
-          <h4>第1希望<span class="req">必須</span></h4>
-
-          <div class="radio-pair pref-mode-group">
-            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="anytime" checked=""> いつでも</label>
-            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="date"> 日付指定</label>
-            <label><input type="radio" name="pref-mode-1" class="pref-mode" value="days"> 曜日指定</label>
-          </div>
-
-          <div class="pref-date-wrap" style="display:none;">
-            <label class="field-label">希望日</label>
-            <input type="date" class="pref-date">
-          </div>
-
-          <div class="pref-days-wrap" style="display:none;">
-            <p class="sub-note">曜日で指定：</p>
-            <div class="check-grid pref-days">
-              <label class="chip day"><input type="checkbox" value="日">日</label>
-              <label class="chip day"><input type="checkbox" value="月">月</label>
-              <label class="chip day"><input type="checkbox" value="火">火</label>
-              <label class="chip day"><input type="checkbox" value="水">水</label>
-              <label class="chip day"><input type="checkbox" value="木">木</label>
-              <label class="chip day"><input type="checkbox" value="金">金</label>
-              <label class="chip day"><input type="checkbox" value="土">土</label>
-            </div>
-          </div>
-
-          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
-
-          <label class="field-label">到着時間帯<span class="req">必須</span></label>
-          <select class="pref-time">
-            <option value="">選択してください</option>
-            <option value="いつでも">いつでも</option>
-            <option value="8時〜9時">8時〜9時</option>
-            <option value="12時〜14時">12時〜14時</option>
-            <option value="15時〜18時">15時〜18時</option>
-          </select>
-          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
+        <div class="dateblk">
+          <label for="date3">作業日 第3希望 <small class="req">必須</small></label>
+          <input type="date" id="date3" name="date3">
+          <label>到着時間帯 <small class="req">必須</small></label>
+          <div class="radios"><label><input type="radio" name="time3" value="いつでも" checked>いつでも</label><label><input type="radio" name="time3" value="8時〜9時">8時〜9時</label><label><input type="radio" name="time3" value="12時〜14時">12時〜14時</label><label><input type="radio" name="time3" value="15時〜18時">15時〜18時</label></div>
         </div>
+        <p class="note">※時間帯は、作業の時間ではなくスタッフが到着する時間帯の目安です。ご希望日での対応が難しい場合は、別の日程をご提案します。</p>
+        <label><input type="checkbox" id="f_notify" name="notify" style="width:18px;height:18px;padding:0;margin-right:6px;vertical-align:middle;accent-color:#e8590c">キャンセルなどで空きが出たら連絡がほしい</label>
 
-        <!-- 第2希望 -->
-        <div class="pref-block" data-pref="2">
-          <h4>第2希望<span class="req">必須</span></h4>
+        <label for="f_parking">駐車スペース <small class="req">必須</small> <small>駐車料金は別途実費</small></label>
+        <select id="f_parking" name="parking">
+          <option value="">選んでください</option>
+          <option>駐車スペースあり</option>
+          <option>自家用車との入れ替えで対応可能</option>
+          <option>近隣に有料駐車場あり（別途実費）</option>
+          <option>駐車スペースなし・不明</option>
+        </select>
+        <p class="note">近隣の店舗の駐車場や路上には停めません。</p>
+        <label for="f_pay">お支払い方法</label>
+        <select id="f_pay" name="pay"><option>現金</option><option>クレジットカード</option><option>PayPay</option></select>
+        <label for="f_how">当店を何でお知りになりましたか？ <small>任意</small></label>
+        <select id="f_how" name="how"><option value="">選んでください</option><option>Googleで検索</option><option>Googleマップ</option><option>Instagram</option><option>LINE</option><option>ミツモア</option><option>おうちにプロ</option><option>ご紹介</option><option>以前に利用した</option><option>チラシ・その他</option></select>
+        <label for="f_note">ご不明な点・気になる汚れなど <small>任意</small></label>
+        <textarea id="f_note" name="note" placeholder="気になる症状、ベッドの上のエアコンかどうか、ペットの有無 など"></textarea>
+        <label for="f_ref">紹介コード <small>任意・ご家族やお知り合いから紹介された方</small></label>
+        <input id="f_ref" name="ref" autocomplete="off" placeholder="例：R261120-101530">
+        <div class="refnote" id="refnote" hidden>ご紹介ありがとうございます。紹介コードが入っています。</div>
+        <div class="hp" aria-hidden="true"><label for="f_website">（入力しないでください）</label><input id="f_website" name="website" tabindex="-1" autocomplete="off"></div>
 
-          <div class="radio-pair pref-mode-group">
-            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="anytime" checked=""> いつでも</label>
-            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="date"> 日付指定</label>
-            <label><input type="radio" name="pref-mode-2" class="pref-mode" value="days"> 曜日指定</label>
-          </div>
-
-          <div class="pref-date-wrap" style="display:none;">
-            <label class="field-label">希望日</label>
-            <input type="date" class="pref-date">
-          </div>
-
-          <div class="pref-days-wrap" style="display:none;">
-            <p class="sub-note">曜日で指定：</p>
-            <div class="check-grid pref-days">
-              <label class="chip day"><input type="checkbox" value="日">日</label>
-              <label class="chip day"><input type="checkbox" value="月">月</label>
-              <label class="chip day"><input type="checkbox" value="火">火</label>
-              <label class="chip day"><input type="checkbox" value="水">水</label>
-              <label class="chip day"><input type="checkbox" value="木">木</label>
-              <label class="chip day"><input type="checkbox" value="金">金</label>
-              <label class="chip day"><input type="checkbox" value="土">土</label>
-            </div>
-          </div>
-
-          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
-
-          <label class="field-label">到着時間帯<span class="req">必須</span></label>
-          <select class="pref-time">
-            <option value="">選択してください</option>
-            <option value="いつでも">いつでも</option>
-            <option value="8時〜9時">8時〜9時</option>
-            <option value="12時〜14時">12時〜14時</option>
-            <option value="15時〜18時">15時〜18時</option>
-          </select>
-          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
+        <div class="caution">
+          <p>※ 動かせない家具は養生して作業します（保証の対象外です）。</p>
+          <p>※ 製造から10年以上経過した機種は保証の対象外です。清掃後に不具合が出た場合の修理費・出張費はお客様のご負担となります。</p>
+          <p>※ 間接損害（営業補償・休業補償・逸失利益など）は対象外です。</p>
         </div>
+        <div class="ng" id="formMsg" hidden></div>
+        <div style="margin-top:16px"><button type="submit" class="btn primary wide">この内容で予約する</button></div>
+        <p class="note">送信後、確認メールをお送りします。作業日は担当者よりご連絡のうえ確定します。</p>
+      </form>
+    </section>
 
-        <!-- 第3希望 -->
-        <div class="pref-block" data-pref="3">
-          <h4>第3希望<span class="req">必須</span></h4>
-
-          <div class="radio-pair pref-mode-group">
-            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="anytime" checked=""> いつでも</label>
-            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="date"> 日付指定</label>
-            <label><input type="radio" name="pref-mode-3" class="pref-mode" value="days"> 曜日指定</label>
-          </div>
-
-          <div class="pref-date-wrap" style="display:none;">
-            <label class="field-label">希望日</label>
-            <input type="date" class="pref-date">
-          </div>
-
-          <div class="pref-days-wrap" style="display:none;">
-            <p class="sub-note">曜日で指定：</p>
-            <div class="check-grid pref-days">
-              <label class="chip day"><input type="checkbox" value="日">日</label>
-              <label class="chip day"><input type="checkbox" value="月">月</label>
-              <label class="chip day"><input type="checkbox" value="火">火</label>
-              <label class="chip day"><input type="checkbox" value="水">水</label>
-              <label class="chip day"><input type="checkbox" value="木">木</label>
-              <label class="chip day"><input type="checkbox" value="金">金</label>
-              <label class="chip day"><input type="checkbox" value="土">土</label>
-            </div>
-          </div>
-
-          <div class="field-error pref-date-error">日付または曜日を選択してください</div>
-
-          <label class="field-label">到着時間帯<span class="req">必須</span></label>
-          <select class="pref-time">
-            <option value="">選択してください</option>
-            <option value="いつでも">いつでも</option>
-            <option value="8時〜9時">8時〜9時</option>
-            <option value="12時〜14時">12時〜14時</option>
-            <option value="15時〜18時">15時〜18時</option>
-          </select>
-          <div class="field-error pref-time-error">到着時間帯を選択してください</div>
-        </div>
-
-        <label class="option-row">
-          <input type="checkbox" id="f-notify">
-          <span class="opt-text">✅ 空き枠が出たら連絡希望</span>
-        </label>
-        <p class="sub-note">キャンセルや直前の空き枠が出た際に、LINEまたはメールで優先的にご案内します。</p>
-      </div>
-
-      <div id="unit-cards-wrap"></div>
-
-      <div class="card">
-        <h2>💳 お支払い方法</h2>
-        <label class="option-row"><input type="checkbox" id="pay-cash"><span class="opt-text">💴 現金</span></label>
-        <label class="option-row"><input type="checkbox" id="pay-card"><span class="opt-text">💳 クレジットカード</span></label>
-        <label class="option-row"><input type="checkbox" id="pay-paypay"><span class="opt-text">📱 PayPay</span></label>
-      </div>
-
-      <div class="card">
-        <h2>💬 ご不明な点・気になる汚れなど</h2>
-        <textarea id="f-notes" placeholder="ご不明な点や気になる汚れなどがございましたらご記入ください"></textarea>
-      </div>
-
-      <div class="card">
-        <h2>⚠️ ご注意事項</h2>
-        <div class="notice-box">
-          <p>※ 間接損害（営業補償・休業補償・逸失利益等）は対象外となります。</p>
-          <p>※製造から10年以上経過した機種は保証対象外となります。</p>
-          <p>※10年以上経ったエアコンに関しましては、万が一、清掃後に動かなくなった場合、修理が可能なのか、業者に来てもらう為の出張費等に関しましても、費用はお客様での負担となります。</p>
-        </div>
-      </div>
-
-      <div class="total-bar">
-        <div class="ttl-label">💰 概算お見積り金額（合計）</div>
-        <div class="ttl-amount">¥<span id="total2b">0</span></div>
-        <div class="ttl-note">税込・高所作業費・天吊り作業費含む</div>
-      </div>
-
-      <button type="submit" class="btn-primary">🌸 予約リクエストを送信する</button>
-      <button type="button" class="btn-secondary" id="backToStep1">← 見積もり内容に戻る</button>
-    </form>
-  </section>
-
-  <!-- ==================== STEP 3: 完了 ==================== -->
-  <section class="step-panel" id="step3">
-    <div class="card complete-box">
-      <div class="emoji">🎉</div>
-      <h2>予約リクエスト完了！</h2>
-      <p>ご予約ありがとうございます。<br>ご登録いただいた内容でスタッフより<br>ご連絡いたします。</p>
-
-      <div class="recap" id="recap"></div>
-
-      <button type="button" class="btn-secondary" id="restartBtn">🔄 はじめからやり直す</button>
-    </div>
-  </section>
-
+    <section class="panel done" id="donePanel" hidden>
+      <div class="mark" aria-hidden="true">✓</div>
+      <p id="doneTitle">ご予約を受け付けました</p>
+      <div id="doneMsg" class="donemsg"></div>
+    </section>
   </main>
-</div>
+  <footer>クリーニングネスト ☎ <a href="tel:08067752022">080-6775-2022</a>（8:00〜18:00・年中無休）<br>兵庫県西宮市高畑町</footer>
 
-<script src="js/form.js"></script>
+<script>
+(function () {
+  'use strict';
 
+  // ---------- 設定 ----------
+  var CONFIG = {
+    // 予約の受付（「予約管理（予約フォーム連携）」シートの Apps Script）
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbyxPSvARbZRycvQbP8S8nHrv2MvzbyoXKraMHPWVhcVHJs0Co0nR0x1BdM5gFybvsk/exec',
+    LINE_URL: 'https://lin.ee/PXCwUj2',
+    FAQ_URL: 'https://violet-jackrabbit-ab4.notion.site/395837cde6f180bbb18dea3d5d70e028',
+    PHONE: '080-6775-2022'
+  };
+  // 料金（1台あたり・税込）
+  var PRICE = { normal: 8000, selfclean: 12000, business: 15000, cassette: 29800, outdoor: 4000, mold: 3000, drain: 2500, combo2: 5000, combo3: 7000 };
+  var HIGH = 3000; // 高所作業（吹き出し口が2.3m以上）・天吊りの室外機、それぞれ1台につき
+  var TYPES = [
+    { k: 'normal', label: '壁掛けエアコン（通常）' },
+    { k: 'selfclean', label: 'お掃除機能付きエアコン' },
+    { k: 'business', label: '業務用壁掛けエアコン' },
+    { k: 'cassette', label: '天井埋め込み（天カセ）' }
+  ];
+  var MENU = [
+    { k: 'normal', label: 'エアコンクリーニング', sub: '壁掛け（通常）8,000円〜' },
+    { k: 'selfclean', label: 'エアコンクリーニング', sub: 'お掃除機能付き 12,000円〜' },
+    { k: 'business', label: 'エアコンクリーニング', sub: '店舗・事務所（業務用壁掛け・天カセ）' }
+  ];
 
+  // ---------- どこから来たか・紹介コード ----------
+  var q = new URLSearchParams(location.search);
+  var source = (function () {
+    try {
+      var keys = ['src', 'from', 'utm_source', 'utm_medium', 'utm_campaign'], parts = [];
+      keys.forEach(function (k) { var v = (q.get(k) || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 40); if (v) parts.push(k === 'utm_source' || k === 'src' ? v : k + '=' + v); });
+      if (parts.length) return parts.join(' ');
+      if (document.referrer) {
+        var ref = new URL(document.referrer);
+        if (ref.hostname !== location.hostname) return ref.hostname;
+        // ホームページ内（トップ・/lp/・/area/〇〇/）から来た場合は、どのページかを残す
+        if (ref.pathname.indexOf('/yoyaku/') !== 0) return ref.hostname + ref.pathname;
+      }
+    } catch (e) {}
+    return '直接';
+  })();
+  // 紹介リンク（?ref=紹介コード）で来た方は、紹介コードを自動で入れる。90日間このブラウザに覚えておく
+  var refFromUrl = (function () {
+    var KEY = 'nest_ref', DAYS = 90, code = String(q.get('ref') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 30);
+    try {
+      if (code) localStorage.setItem(KEY, JSON.stringify({ code: code, at: Date.now() }));
+      else {
+        var v = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (v && v.code && Date.now() - v.at < DAYS * 864e5) code = String(v.code).slice(0, 30);
+      }
+    } catch (e) {}
+    return code;
+  })();
+
+  var MSG = {
+    first: refFromUrl ? 'ご紹介ありがとうございます。クリーニングネストです。エアコンクリーニングのご予約でよろしいですか？' : 'ご覧いただきありがとうございます。クリーニングネストです。エアコンクリーニングのご予約でよろしいですか？',
+    yes: 'ありがとうございます。お手数ですが、ご予約フォームへのご入力をお願いいたします。',
+    no: 'ごゆっくりご覧ください。気になることは、LINEやお電話でもお気軽にどうぞ。'
+  };
+
+  // ---------- 画面 ----------
+  var $ = function (id) { return document.getElementById(id); };
+  var chat = $('chat');
+  var timers = [];
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var yen = function (n) { return Number(n).toLocaleString('ja-JP'); };
+
+  function addRow(side, html) {
+    var row = document.createElement('div');
+    row.className = 'row ' + side;
+    row.innerHTML = (side === 'in' ? '<div class="avatar" aria-hidden="true">ネスト</div>' : '') + '<div class="bubble">' + html + '</div>';
+    chat.appendChild(row);
+    row.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    return row;
+  }
+  // 「入力中…」を見せてから言葉を出す
+  function say(text, then) {
+    var row = addRow('in', '<span class="typing" aria-label="入力中"><i></i><i></i><i></i></span>');
+    later(function () {
+      row.querySelector('.bubble').textContent = text;
+      if (then) then();
+    }, reduce ? 0 : 900);
+  }
+  function hideAll() { ['choices', 'toForm', 'menuPanel', 'formPanel', 'donePanel', 'hdrEst'].forEach(function (id) { $(id).hidden = true; }); }
+
+  function start() {
+    timers.forEach(clearTimeout); timers = [];
+    chat.innerHTML = '';
+    hideAll();
+    resetForm();
+    later(function () { say(MSG.first, function () { $('choices').hidden = false; }); }, reduce ? 0 : 300);
+  }
+
+  function showForm(preset) {
+    hideAll();
+    if (preset) { st = Object.assign({}, ZERO, { normal: 0 }); st[preset] = 1; renderAll(); }
+    $('formPanel').hidden = false;
+    $('hdrEst').hidden = false;
+    // 上の帯（名前と概算）に隠れないよう、帯の高さぶん下げて見出しから見せる
+    var hdr = document.querySelector('header');
+    var y = 0, el = $('formPanel');
+    while (el) { y += el.offsetTop; el = el.offsetParent; }
+    window.scrollTo({ top: Math.max(0, y - (hdr ? hdr.offsetHeight : 0) - 8), behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  MENU.forEach(function (m) {
+    var li = document.createElement('li');
+    li.innerHTML = '<div><div class="label">' + esc(m.label) + '</div><div class="sub">' + esc(m.sub) + '</div></div>';
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn primary'; b.textContent = 'これを予約';
+    b.addEventListener('click', function () { showForm(m.k); });
+    li.appendChild(b);
+    $('menuList').appendChild(li);
+  });
+
+  $('yes').addEventListener('click', function () {
+    $('choices').hidden = true;
+    addRow('out', 'はい');
+    say(MSG.yes, function () { $('toForm').hidden = false; });
+  });
+  $('no').addEventListener('click', function () {
+    $('choices').hidden = true;
+    addRow('out', 'いいえ');
+    say(MSG.no, function () { $('menuPanel').hidden = false; });
+  });
+  $('goForm').addEventListener('click', function () { showForm(); });
+  $('reset').addEventListener('click', function () { window.scrollTo({ top: 0 }); start(); });
+
+  // ---------- 台数・オプションと概算 ----------
+  var ZERO = { normal: 1, selfclean: 0, business: 0, cassette: 0, outdoor: 0, mold: 0, drain: 0, combo2: 0, combo3: 0 };
+  var st = Object.assign({}, ZERO);
+  var unitData = {}; // エアコンごと・室外機ごとの入力（台数を変えても消えないように）
+
+  function acCount() { return st.normal + st.selfclean + st.business + st.cassette; }
+  function outdoorCount() { return st.outdoor + st.combo2 + st.combo3; } // おまとめにも室外機が入る
+  function base() { var t = 0; Object.keys(PRICE).forEach(function (k) { t += st[k] * PRICE[k]; }); return t; }
+  function total() {
+    var high = document.querySelectorAll('.u-height[value="high"]:checked').length;
+    var hang = document.querySelectorAll('.o-hang[value="hang"]:checked').length;
+    return base() + (high + hang) * HIGH;
+  }
+  function maxOf(k) { return 20; }
+  function renderEst() {
+    Object.keys(st).forEach(function (k) { $('o_' + k).textContent = st[k]; });
+    $('e_total').textContent = yen(total());
+    $('hdrTotal').textContent = yen(total());
+    document.querySelectorAll('.bk .ctr button').forEach(function (b) {
+      var k = b.dataset.k, d = +b.dataset.d;
+      b.disabled = d < 0 ? st[k] <= 0 : st[k] >= maxOf(k);
+    });
+  }
+
+  function saveUnits() {
+    document.querySelectorAll('.unit[data-id]').forEach(function (u) {
+      var h = u.querySelector('.u-height:checked');
+      unitData[u.dataset.id] = { location: u.querySelector('.u-location').value, model: u.querySelector('.u-model').value, year: u.querySelector('.u-year').value, height: h ? h.value : 'normal' };
+    });
+    document.querySelectorAll('.o-hang:checked').forEach(function (r) { unitData[r.name] = r.value; });
+  }
+  function opt(v, cur) { return '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + v + '</option>'; }
+  function renderUnits() {
+    saveUnits();
+    var html = '';
+    TYPES.forEach(function (t) {
+      for (var i = 1; i <= st[t.k]; i++) {
+        var id = t.k + '-' + i, d = unitData[id] || { location: '', model: '', year: '', height: 'normal' };
+        html += '<div class="unit" data-id="' + id + '" data-label="' + esc(t.label + ' ' + i + '台目') + '">'
+          + '<h4>' + esc(t.label) + ' ' + i + '台目</h4>'
+          + '<label>設置場所 <small class="req">必須</small></label>'
+          + '<select class="u-location"><option value="">選んでください</option>' + ['リビング', '寝室', '子供部屋', '和室', '店舗・事務所', 'その他'].map(function (v) { return opt(v, d.location); }).join('') + '</select>'
+          + '<div class="g2"><div><label>型番 <small class="req">必須</small></label><input type="text" class="u-model" inputmode="latin" autocomplete="off" placeholder="例：MSZ-GV2523" value="' + esc(d.model) + '"></div>'
+          + '<div><label>製造年 <small class="req">必須</small></label><input type="number" class="u-year" inputmode="numeric" min="1990" max="2100" placeholder="例：2019" value="' + esc(d.year) + '"></div></div>'
+          + '<p class="note u-yearnote"></p>'
+          + '<label>床から吹き出し口までの高さ <small class="req">必須</small></label>'
+          + '<div class="radios"><label><input type="radio" class="u-height" name="height-' + id + '" value="normal"' + (d.height !== 'high' ? ' checked' : '') + '>2.3m未満</label>'
+          + '<label><input type="radio" class="u-height" name="height-' + id + '" value="high"' + (d.height === 'high' ? ' checked' : '') + '>2.3m以上（高所作業 ＋3,000円）</label></div>'
+          + '</div>';
+      }
+    });
+    var n = outdoorCount();
+    if (n) {
+      html += '<div class="unit"><h4>室外機の置き場所</h4><p class="note">天井や壁から吊り下げられている室外機は、作業費 ＋3,000円 がかかります。</p>';
+      for (var j = 1; j <= n; j++) {
+        var v = unitData['hang-' + j] || 'normal';
+        html += '<label>室外機 ' + j + '台目</label><div class="radios">'
+          + '<label><input type="radio" class="o-hang" name="hang-' + j + '" value="normal"' + (v !== 'hang' ? ' checked' : '') + '>地面・ベランダ置き</label>'
+          + '<label><input type="radio" class="o-hang" name="hang-' + j + '" value="hang"' + (v === 'hang' ? ' checked' : '') + '>天吊り（＋3,000円）</label></div>';
+      }
+      html += '</div>';
+    }
+    $('units').innerHTML = html || '<p class="note">上でエアコンの台数を選んでください。</p>';
+    document.querySelectorAll('.u-height, .o-hang').forEach(function (r) { r.addEventListener('change', renderEst); });
+    document.querySelectorAll('.u-year').forEach(function (y) { y.addEventListener('input', function () { yearNote(y); }); yearNote(y); });
+  }
+  function yearNote(input) {
+    var y = parseInt(input.value, 10), note = input.closest('.unit').querySelector('.u-yearnote');
+    var age = new Date().getFullYear() - y;
+    if (!isNaN(y) && y >= 1990 && age >= 10) { note.textContent = '製造から' + age + '年経過しています。保証の対象外となります。'; note.className = 'warn u-yearnote'; }
+    else { note.textContent = ''; note.className = 'note u-yearnote'; }
+  }
+  function renderAll() { renderUnits(); renderEst(); }
+
+  document.querySelectorAll('.bk .ctr button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.k, d = +b.dataset.d;
+      st[k] = Math.max(0, Math.min(maxOf(k), st[k] + d));
+      renderAll();
+    });
+  });
+
+  function resetForm() {
+    $('form').reset();
+    st = Object.assign({}, ZERO);
+    unitData = {};
+    $('formMsg').hidden = true;
+    var sb = $('form').querySelector('button[type=submit]'); sb.disabled = false; sb.textContent = 'この内容で予約する';
+    if (refFromUrl) { $('f_ref').value = refFromUrl; $('refnote').hidden = false; }
+    $('zipMsg').textContent = '';
+    renderAll();
+  }
+
+  // 作業希望日は明後日以降（日本時間）
+  (function () {
+    var now = new Date(Date.now() + 9 * 3600 * 1000);
+    now.setUTCDate(now.getUTCDate() + 2);
+    var min = now.toISOString().slice(0, 10);
+    ['date1', 'date2', 'date3'].forEach(function (n) { $(n).min = min; });
+  })();
+
+  // ---------- 郵便番号から住所 ----------
+  $('zipBtn').addEventListener('click', function () {
+    var z = $('f_zip').value.replace(/[^0-9]/g, '');
+    if (z.length !== 7) { $('zipMsg').textContent = '郵便番号は7桁で入力してください。'; return; }
+    $('zipMsg').textContent = '検索中…';
+    fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + z)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.status === 200 && d.results && d.results.length) {
+          var r = d.results[0];
+          $('f_address').value = r.address1 + r.address2 + r.address3;
+          $('zipMsg').textContent = '住所を入れました。番地・号も入力してください。';
+          $('f_banchi').focus();
+        } else { $('zipMsg').textContent = '見つかりませんでした。手で入力してください。'; }
+      })
+      .catch(function () { $('zipMsg').textContent = '検索できませんでした。手で入力してください。'; });
+  });
+
+  // ---------- 必須チェック ----------
+  function formError() {
+    if (acCount() < 1) return { el: $('o_normal'), text: 'エアコンの台数を選んでください。' };
+    var units = document.querySelectorAll('.unit[data-id]');
+    for (var i = 0; i < units.length; i++) {
+      var u = units[i], label = u.dataset.label;
+      if (!u.querySelector('.u-location').value) return { el: u.querySelector('.u-location'), text: label + 'の設置場所を選んでください。' };
+      var m = u.querySelector('.u-model').value.trim();
+      if (!m) return { el: u.querySelector('.u-model'), text: label + 'の型番を入力してください。わからない場合は「不明」と入力してください。' };
+      var y = u.querySelector('.u-year').value.trim();
+      if (!/^\d{4}$/.test(y) || +y < 1990 || +y > 2100) return { el: u.querySelector('.u-year'), text: label + 'の製造年を西暦4桁で入力してください（例：2019）。' };
+    }
+    var LABELS = { f_name: 'お名前', f_tel: '電話番号', f_email: 'メールアドレス', f_zip: '郵便番号', f_address: 'ご住所', f_banchi: '番地・号', date1: '作業日 第1希望', date2: '作業日 第2希望', date3: '作業日 第3希望', f_parking: '駐車スペース' };
+    for (var id in LABELS) {
+      var el = $(id), v = (el.value || '').trim();
+      if (!v) return { el: el, text: LABELS[id] + 'を入力してください。' };
+      if (id === 'f_tel' && !/^[0-9\-]{10,13}$/.test(v)) return { el: el, text: '電話番号は数字で入力してください。' };
+      if (id === 'f_email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return { el: el, text: 'メールアドレスの形式をご確認ください。' };
+      if (id === 'f_zip' && v.replace(/[^0-9]/g, '').length !== 7) return { el: el, text: '郵便番号は7桁で入力してください。' };
+      if (el.type === 'date' && el.min && v < el.min) return { el: el, text: LABELS[id] + 'は ' + el.min.replace(/-/g, '/') + ' 以降の日付を選んでください。' };
+    }
+    if (!document.querySelector('input[name=housing]:checked')) return { el: $('housing'), text: 'お住まいのタイプを選んでください。' };
+    return null;
+  }
+
+  // ---------- 送信（「予約管理（予約フォーム連携）」シートへ） ----------
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var bad = formError();
+    if (bad) {
+      $('formMsg').textContent = bad.text; $('formMsg').hidden = false;
+      bad.el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      return;
+    }
+    var v = function (id) { return ($(id).value || '').trim(); };
+    var loc = [], model = [], year = [], height = [];
+    document.querySelectorAll('.unit[data-id]').forEach(function (u, i) {
+      var n = (i + 1) + '台目', h = u.querySelector('.u-height:checked');
+      loc.push(n + '（' + u.dataset.label + '）：' + u.querySelector('.u-location').value);
+      model.push(n + '：' + u.querySelector('.u-model').value.trim());
+      year.push(n + '：' + u.querySelector('.u-year').value.trim() + '年');
+      height.push(n + '：' + (h && h.value === 'high' ? '2.3m以上（高所作業費 +¥3,000）' : '2.3m未満（通常）'));
+    });
+    for (var j = 1; j <= outdoorCount(); j++) {
+      var hc = document.querySelector('.o-hang[name="hang-' + j + '"]:checked');
+      height.push('室外機' + j + '台目：' + (hc && hc.value === 'hang' ? '天吊り（作業費 +¥3,000）' : '地面・ベランダ置き（通常）'));
+    }
+    var pref = function (n) { var r = document.querySelector('input[name=time' + n + ']:checked'); return v('date' + n) + '（' + (r ? r.value : 'いつでも') + '）'; };
+    var ref = v('f_ref').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 30);
+    var housing = document.querySelector('input[name=housing]:checked').value;
+    var add = ['【お住まい】' + housing];
+    if (v('f_how')) add.push('【きっかけ】' + v('f_how'));
+    if (ref) add.push('【紹介コード】' + ref);
+    var notes = add.join('\n') + (v('f_note') ? '\n' + v('f_note') : '');
+    var data = {
+      website: v('f_website'),
+      name: v('f_name'), tel: v('f_tel'), email: v('f_email'), zip: v('f_zip'),
+      address: v('f_address') + ' ' + v('f_banchi') + (v('f_building') ? ' ' + v('f_building') : ''),
+      qtyNormal: st.normal, qtySelfclean: st.selfclean, qtyBusiness: st.business, qtyCassette: st.cassette,
+      qtyOutdoor: st.outdoor, qtyMold: st.mold, qtyDrain: st.drain, qtyCombo2: st.combo2, qtyCombo3: st.combo3,
+      location: loc.join('\n'), model: model.join('\n'), year: year.join('\n'), heightLabel: height.join('\n'),
+      parking: v('f_parking'), pref1: pref(1), pref2: pref(2), pref3: pref(3), pay: v('f_pay'),
+      notes: notes, grand: total(), notify: $('f_notify').checked, ref: ref, housing: housing,
+      // 紹介コードは流入元にも残す（シートの「流入元」列で見分けられるように）
+      source: (ref ? 'ref=' + ref + ' ' : '') + source,
+      device: /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) ? 'スマホ' : 'PC'
+    };
+    var btn = $('form').querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = '送信中…'; $('formMsg').hidden = true;
+    fetch(CONFIG.GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
+      .then(function (r) { return r.text(); })
+      .then(function (txt) {
+        // 返事が読めないとき（一部のスマホ）は受付済みとして扱う
+        var j; try { j = JSON.parse(txt); } catch (_) { j = { ok: true, id: '' }; }
+        if (!j.ok) throw new Error(j.error || '送信失敗');
+        showDone(String(j.id || ''), data);
+      })
+      .catch(function (err) {
+        $('formMsg').textContent = '送信できませんでした。お手数ですが ☎' + CONFIG.PHONE + ' までご連絡ください。（' + err.message + '）';
+        $('formMsg').hidden = false;
+        btn.disabled = false; btn.textContent = 'この内容で予約する';
+      });
+  });
+
+  function showDone(id, data) {
+    hideAll();
+    var okId = /^R\d{6}-\d{6}$/.test(id);
+    var html = okId
+      ? '<p class="rid">受付番号<b>' + esc(id) + '</b></p><p>確認メールをお送りしました。作業日は担当者よりご連絡のうえ確定します。お問い合わせの際は受付番号をお伝えください。</p>'
+      : '<p>確認メールをお送りしました（受付番号はメールに書いてあります）。作業日は担当者よりご連絡のうえ確定します。</p>';
+    html += '<p>概算金額：<b>¥' + yen(data.grand) + '</b>（税込・駐車場代別）</p>';
+    html += '<div class="after"><b>当日までに気になることがあれば</b><p>よくあるご質問をご覧いただくか、LINE・お電話でお気軽にどうぞ。</p>'
+      + '<a class="btn ghost" href="' + CONFIG.FAQ_URL + '" target="_blank" rel="noopener">よくあるご質問を見る</a>'
+      + '<a class="btn line" href="' + CONFIG.LINE_URL + '" target="_blank" rel="noopener">LINEで相談する</a>'
+      + '<a class="btn ghost" href="tel:' + CONFIG.PHONE.replace(/-/g, '') + '">電話する（' + CONFIG.PHONE + '）</a></div>';
+    $('doneMsg').innerHTML = html;
+    if (okId) showShare(id);
+    $('donePanel').hidden = false;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  // 予約した方に、ご自身の紹介リンクを表示（紹介コード＝受付番号）
+  function showShare(id) {
+    var url = location.origin + location.pathname + '?ref=' + encodeURIComponent(id);
+    var text = 'エアコンクリーニングはクリーニングネストさんに頼みました。予約はこちらから → ' + url;
+    var box = document.createElement('div');
+    box.className = 'share';
+    box.innerHTML = '<b>ご家族やお知り合いに紹介しませんか</b>'
+      + '<p>このリンクから予約すると、あなたの紹介だとわかるようになっています。</p>'
+      + '<div class="link"><input readonly value="' + esc(url) + '" aria-label="あなたの紹介リンク"><button type="button">コピー</button></div>'
+      + '<a class="line" href="https://line.me/R/share?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">LINEで送る</a>'
+      + '<p>あなたの紹介コード：<b style="display:inline">' + esc(id) + '</b></p>';
+    box.querySelector('button').addEventListener('click', function (e) {
+      try { navigator.clipboard.writeText(url).then(function () { e.target.textContent = 'コピーしました'; }, function () { box.querySelector('input').select(); }); }
+      catch (_) { box.querySelector('input').select(); }
+    });
+    $('doneMsg').appendChild(box);
+  }
+
+  start();
+})();
+</script>
 </body>
 </html>
