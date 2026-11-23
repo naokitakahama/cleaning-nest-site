@@ -166,6 +166,7 @@
   .bk .note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
   .bk .warn { font-size: 13px; color: #b4532a; margin: 4px 0 0; }
   .bk .ng { background: #fbe9e2; color: #b4532a; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+  .bk .flyer { background: #fff7f5; border: 1px dashed var(--orange); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
   .bk .refnote { background: #fdeee2; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-top: 8px; }
   .bk .caution { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
   .bk .caution p { margin: 2px 0; }
@@ -215,9 +216,14 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       <p class="note" style="margin:0 0 12px">台数とオプションを選ぶと概算が出ます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
       <form id="form" novalidate>
         <h3>1. 台数とオプションを選ぶ</h3>
-        <div class="row-item"><div class="t"><b>壁掛けエアコン（通常）</b><span>8,000円/台</span></div>
+        <div class="flyer">
+          <label for="f_flyer" style="margin-top:0">チラシのキーワード <small>任意・チラシをお持ちの方は特別価格</small></label>
+          <input id="f_flyer" name="flyer" autocomplete="off" placeholder="チラシに書いてある言葉を入力">
+          <div class="refnote" id="flyernote" hidden></div>
+        </div>
+        <div class="row-item"><div class="t"><b>壁掛けエアコン（通常）</b><span id="p_normal">8,000円/台</span></div>
           <div class="ctr"><button type="button" data-k="normal" data-d="-1" aria-label="壁掛けエアコン（通常）を減らす">−</button><output id="o_normal">1</output><button type="button" data-k="normal" data-d="1" aria-label="壁掛けエアコン（通常）を増やす">＋</button></div></div>
-        <div class="row-item"><div class="t"><b>お掃除機能付きエアコン</b><span>12,000円/台</span></div>
+        <div class="row-item"><div class="t"><b>お掃除機能付きエアコン</b><span id="p_selfclean">12,000円/台</span></div>
           <div class="ctr"><button type="button" data-k="selfclean" data-d="-1" aria-label="お掃除機能付きエアコンを減らす">−</button><output id="o_selfclean">0</output><button type="button" data-k="selfclean" data-d="1" aria-label="お掃除機能付きエアコンを増やす">＋</button></div></div>
         <div class="row-item"><div class="t"><b>業務用壁掛けエアコン</b><span>15,000円/台｜店舗・事務所の壁掛けタイプ</span></div>
           <div class="ctr"><button type="button" data-k="business" data-d="-1" aria-label="業務用壁掛けエアコンを減らす">−</button><output id="o_business">0</output><button type="button" data-k="business" data-d="1" aria-label="業務用壁掛けエアコンを増やす">＋</button></div></div>
@@ -234,7 +240,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
           <div class="ctr"><button type="button" data-k="combo2" data-d="-1" aria-label="おまとめ2点を減らす">−</button><output id="o_combo2">0</output><button type="button" data-k="combo2" data-d="1" aria-label="おまとめ2点を増やす">＋</button></div></div>
         <div class="row-item" style="border-bottom:0"><div class="t"><b>おまとめ3点</b><span>防カビ・抗菌コート＋室外機＋ドレンホース｜7,000円/台</span></div>
           <div class="ctr"><button type="button" data-k="combo3" data-d="-1" aria-label="おまとめ3点を減らす">−</button><output id="o_combo3">0</output><button type="button" data-k="combo3" data-d="1" aria-label="おまとめ3点を増やす">＋</button></div></div>
-        <div class="est"><b>概算金額</b><div class="v">¥<span id="e_total">8,000</span><small> 円（税込・駐車場代別）</small></div><p class="note" id="e_ref" hidden style="flex-basis:100%;margin:0">紹介割引 −1,000円 が入っています</p></div>
+        <div class="est"><b>概算金額</b><div class="v">¥<span id="e_total">8,000</span><small> 円（税込・駐車場代別）</small></div><p class="note" id="e_ref" hidden style="flex-basis:100%;margin:0"></p></div>
         <p class="note">オプションは、当日スタッフと相談してから決めていただいても大丈夫です。</p>
 
         <h3 style="margin-top:20px">2. エアコンごとに教えてください</h3>
@@ -459,8 +465,21 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
 
   function acCount() { return st.normal + st.selfclean + st.business + st.cassette; }
   function outdoorCount() { return st.outdoor + st.combo2 + st.combo3; } // おまとめにも室外機が入る
-  function base() { var t = 0; Object.keys(PRICE).forEach(function (k) { t += st[k] * PRICE[k]; }); return t; }
-  // 紹介コード（紹介した方の受付番号）が入っていれば、1回のご予約につき1,000円引き
+  function base() { var t = 0; Object.keys(PRICE).forEach(function (k) { t += st[k] * unitPrice(k); }); return t; }
+  // チラシのキーワード（配ったスタッフの名前）。入っていれば壁掛けとお掃除機能付きがチラシ価格になる
+  var FLYER_WORDS = ['築井', '吉田'];
+  // 3台以上は1台あたりさらに安く（同じ種類のエアコンで数える）
+  var FLYER_PRICE = { normal: { base: 5980, three: 5500 }, selfclean: { base: 9800, three: 9500 } };
+  function flyerWord() {
+    var v = ($('f_flyer').value || '').replace(/\s/g, '');
+    for (var i = 0; i < FLYER_WORDS.length; i++) if (v.indexOf(FLYER_WORDS[i]) !== -1) return FLYER_WORDS[i];
+    return '';
+  }
+  function unitPrice(k) {
+    var f = flyerWord() && FLYER_PRICE[k];
+    return f ? (st[k] >= 3 ? f.three : f.base) : PRICE[k];
+  }
+  // 紹介コード（紹介した方の受付番号）が入っていれば、1回のご予約につき1,000円引き（チラシ価格とは併用しない）
   var REF_DISCOUNT = 1000;
   function refCode() { return ($('f_ref').value || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 30); }
   function refValid() { return /^R\d{6}-\d{6}$/.test(refCode()); }
@@ -468,17 +487,24 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     var high = document.querySelectorAll('.u-height[value="high"]:checked').length;
     var hang = document.querySelectorAll('.o-hang[value="hang"]:checked').length;
     var t = base() + (high + hang) * HIGH;
-    return t > 0 && refValid() ? Math.max(0, t - REF_DISCOUNT) : t;
+    return t > 0 && refValid() && !flyerWord() ? Math.max(0, t - REF_DISCOUNT) : t;
   }
   function maxOf(k) { return 20; }
   function renderEst() {
     Object.keys(st).forEach(function (k) { $('o_' + k).textContent = st[k]; });
     $('e_total').textContent = yen(total());
     $('hdrTotal').textContent = yen(total());
-    $('e_ref').hidden = !refValid();
+    var fw = flyerWord(), fv = ($('f_flyer').value || '').trim();
+    ['normal', 'selfclean'].forEach(function (k) {
+      $('p_' + k).textContent = fw ? 'チラシ価格 ' + yen(FLYER_PRICE[k].base) + '円/台（3台以上は ' + yen(FLYER_PRICE[k].three) + '円/台）' : yen(PRICE[k]) + '円/台';
+    });
+    $('flyernote').hidden = !fv;
+    $('flyernote').textContent = !fv ? '' : fw ? 'チラシをご覧いただきありがとうございます。壁掛けエアコンとお掃除機能付きエアコンがチラシ価格になりました。' : 'キーワードが違うようです。チラシに書いてある言葉をもう一度ご確認ください。';
+    $('e_ref').hidden = !(fw || refValid());
+    $('e_ref').textContent = fw ? 'チラシ価格が入っています' : '紹介割引 −1,000円 が入っています';
     var c = refCode();
     $('refnote').hidden = !c;
-    $('refnote').textContent = !c ? '' : refValid() ? 'ご紹介ありがとうございます。紹介割引（1,000円引き）が概算に入っています。' : '紹介コードの形が違うようです（例：R261120-101530）。このままでも送れますが、割引はお店で確認してからのご案内になります。';
+    $('refnote').textContent = !c ? '' : fw ? 'チラシ価格が入っているため、紹介割引はつきません（割引はどちらか1つです）。' : refValid() ? 'ご紹介ありがとうございます。紹介割引（1,000円引き）が概算に入っています。' : '紹介コードの形が違うようです（例：R261120-101530）。このままでも送れますが、割引はお店で確認してからのご案内になります。';
     document.querySelectorAll('.bk .ctr button').forEach(function (b) {
       var k = b.dataset.k, d = +b.dataset.d;
       b.disabled = d < 0 ? st[k] <= 0 : st[k] >= maxOf(k);
@@ -544,6 +570,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   });
 
   $('f_ref').addEventListener('input', renderEst);
+  $('f_flyer').addEventListener('input', renderEst);
 
   function resetForm() {
     $('form').reset();
@@ -552,6 +579,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     $('formMsg').hidden = true;
     var sb = $('form').querySelector('button[type=submit]'); sb.disabled = false; sb.textContent = 'この内容で予約する';
     if (refFromUrl) $('f_ref').value = refFromUrl;
+    if (q.get('flyer')) $('f_flyer').value = String(q.get('flyer')).slice(0, 20);
     $('zipMsg').textContent = '';
     renderAll();
   }
@@ -630,11 +658,13 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       height.push('室外機' + j + '台目：' + (hc && hc.value === 'hang' ? '天吊り（作業費 +¥3,000）' : '地面・ベランダ置き（通常）'));
     }
     var pref = function (n) { var r = document.querySelector('input[name=time' + n + ']:checked'); return v('date' + n) + '（' + (r ? r.value : 'いつでも') + '）'; };
-    var ref = refCode();
+    var ref = refCode(), flyer = flyerWord();
     var housing = document.querySelector('input[name=housing]:checked').value;
     var add = ['【お住まい】' + housing];
     if (v('f_how')) add.push('【きっかけ】' + v('f_how'));
-    if (ref) add.push('【紹介コード】' + ref + (refValid() ? '（紹介割引 −1,000円を概算に反映）' : '（形が違うため割引は未反映・要確認）'));
+    if (flyer) add.push('【チラシ】' + flyer + '（チラシ価格を概算に反映）');
+    else if (v('f_flyer')) add.push('【チラシ】キーワード「' + v('f_flyer').slice(0, 20) + '」は一致せず通常価格・要確認');
+    if (ref) add.push('【紹介コード】' + ref + (flyer ? '（チラシ価格のため紹介割引なし）' : refValid() ? '（紹介割引 −1,000円を概算に反映）' : '（形が違うため割引は未反映・要確認）'));
     var notes = add.join('\n') + (v('f_note') ? '\n' + v('f_note') : '');
     var data = {
       website: v('f_website'),
@@ -644,9 +674,10 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       qtyOutdoor: st.outdoor, qtyMold: st.mold, qtyDrain: st.drain, qtyCombo2: st.combo2, qtyCombo3: st.combo3,
       location: loc.join('\n'), model: model.join('\n'), year: year.join('\n'), heightLabel: height.join('\n'),
       parking: v('f_parking'), pref1: pref(1), pref2: pref(2), pref3: pref(3), pay: v('f_pay'),
-      notes: notes, grand: total(), notify: $('f_notify').checked, ref: ref, housing: housing,
+      notes: notes, grand: total(), notify: $('f_notify').checked, ref: ref, flyer: flyer, housing: housing,
       // 紹介コードは流入元にも残す（シートの「流入元」列で見分けられるように）
-      source: (ref ? 'ref=' + ref + ' ' : '') + source,
+      // チラシ・紹介コードは流入元の頭にも残す（シートの「流入元」列で見分け・集計できるように）
+      source: (flyer ? 'チラシ:' + flyer + ' ' : '') + (ref ? 'ref=' + ref + ' ' : '') + source,
       device: /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) ? 'スマホ' : 'PC'
     };
     var btn = $('form').querySelector('button[type=submit]');
