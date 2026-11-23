@@ -166,7 +166,6 @@
   .bk .note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
   .bk .warn { font-size: 13px; color: #b4532a; margin: 4px 0 0; }
   .bk .ng { background: #fbe9e2; color: #b4532a; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
-  .bk .flyer { background: #fff7f5; border: 1px dashed var(--orange); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
   .bk .refnote { background: #fdeee2; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-top: 8px; }
   .bk .caution { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
   .bk .caution p { margin: 2px 0; }
@@ -216,11 +215,6 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       <p class="note" style="margin:0 0 12px">台数とオプションを選ぶと概算が出ます。送信後すぐに確認メールが届き、作業日は担当者よりご連絡のうえ確定します。</p>
       <form id="form" novalidate>
         <h3>1. 台数とオプションを選ぶ</h3>
-        <div class="flyer">
-          <label for="f_flyer" style="margin-top:0">チラシのキーワード <small>任意・チラシをお持ちの方は特別価格</small></label>
-          <input id="f_flyer" name="flyer" autocomplete="off" placeholder="チラシに書いてある言葉を入力">
-          <div class="refnote" id="flyernote" hidden></div>
-        </div>
         <div class="row-item"><div class="t"><b>壁掛けエアコン（通常）</b><span id="p_normal">8,000円/台</span></div>
           <div class="ctr"><button type="button" data-k="normal" data-d="-1" aria-label="壁掛けエアコン（通常）を減らす">−</button><output id="o_normal">1</output><button type="button" data-k="normal" data-d="1" aria-label="壁掛けエアコン（通常）を増やす">＋</button></div></div>
         <div class="row-item"><div class="t"><b>お掃除機能付きエアコン</b><span id="p_selfclean">12,000円/台</span></div>
@@ -301,10 +295,9 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
         <select id="f_how" name="how"><option value="">選んでください</option><option>Googleで検索</option><option>Googleマップ</option><option>Instagram</option><option>LINE</option><option>ミツモア</option><option>おうちにプロ</option><option>ご紹介</option><option>以前に利用した</option><option>チラシ・その他</option></select>
         <label for="f_note">ご不明な点・気になる汚れなど <small>任意</small></label>
         <textarea id="f_note" name="note" placeholder="気になる症状、ベッドの上のエアコンかどうか、ペットの有無 など"></textarea>
-        <label for="f_ref">紹介コード <small>任意・ご紹介の方は1,000円引き</small></label>
-        <input id="f_ref" name="ref" autocomplete="off" placeholder="例：R261120-101530">
+        <label for="f_ref">紹介者 <small>任意</small></label>
+        <input id="f_ref" name="ref" autocomplete="off">
         <div class="refnote" id="refnote" hidden></div>
-        <p class="note">紹介コードは、紹介してくれた方の受付番号です。割引は1回のご予約につき1,000円で、紹介コードはお店で確認します。</p>
         <div class="hp" aria-hidden="true"><label for="f_website">（入力しないでください）</label><input id="f_website" name="website" tabindex="-1" autocomplete="off"></div>
 
         <div class="caution">
@@ -371,7 +364,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   })();
   // 紹介リンク（?ref=紹介コード）で来た方は、紹介コードを自動で入れる。90日間このブラウザに覚えておく
   var refFromUrl = (function () {
-    var KEY = 'nest_ref', DAYS = 90, code = String(q.get('ref') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 30);
+    var KEY = 'nest_ref', DAYS = 90, code = String(q.get('ref') || q.get('flyer') || '').replace(/[\s<>"'&]/g, '').slice(0, 30);
     try {
       if (code) localStorage.setItem(KEY, JSON.stringify({ code: code, at: Date.now() }));
       else {
@@ -466,12 +459,12 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   function acCount() { return st.normal + st.selfclean + st.business + st.cassette; }
   function outdoorCount() { return st.outdoor + st.combo2 + st.combo3; } // おまとめにも室外機が入る
   function base() { var t = 0; Object.keys(PRICE).forEach(function (k) { t += st[k] * unitPrice(k); }); return t; }
-  // チラシのキーワード（配ったスタッフの名前）。入っていれば壁掛けとお掃除機能付きがチラシ価格になる
+  // チラシのキーワード（配ったスタッフの名前）。紹介者の欄に入っていれば壁掛けとお掃除機能付きが特別価格になる
   var FLYER_WORDS = ['築井', '吉田'];
   // 3台以上は1台あたりさらに安く（同じ種類のエアコンで数える）
   var FLYER_PRICE = { normal: { base: 5980, three: 5500 }, selfclean: { base: 9800, three: 9500 } };
   function flyerWord() {
-    var v = ($('f_flyer').value || '').replace(/\s/g, '');
+    var v = refRaw();
     for (var i = 0; i < FLYER_WORDS.length; i++) if (v.indexOf(FLYER_WORDS[i]) !== -1) return FLYER_WORDS[i];
     return '';
   }
@@ -481,6 +474,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   }
   // 紹介コード（紹介した方の受付番号）が入っていれば、1回のご予約につき1,000円引き（チラシ価格とは併用しない）
   var REF_DISCOUNT = 1000;
+  function refRaw() { return ($('f_ref').value || '').replace(/[\s<>"'&]/g, '').slice(0, 30); }
   function refCode() { return ($('f_ref').value || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 30); }
   function refValid() { return /^R\d{6}-\d{6}$/.test(refCode()); }
   function total() {
@@ -494,17 +488,15 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     Object.keys(st).forEach(function (k) { $('o_' + k).textContent = st[k]; });
     $('e_total').textContent = yen(total());
     $('hdrTotal').textContent = yen(total());
-    var fw = flyerWord(), fv = ($('f_flyer').value || '').trim();
+    var fw = flyerWord();
     ['normal', 'selfclean'].forEach(function (k) {
-      $('p_' + k).textContent = fw ? 'チラシ価格 ' + yen(FLYER_PRICE[k].base) + '円/台（3台以上は ' + yen(FLYER_PRICE[k].three) + '円/台）' : yen(PRICE[k]) + '円/台';
+      $('p_' + k).textContent = fw ? '特別価格 ' + yen(FLYER_PRICE[k].base) + '円/台（3台以上は ' + yen(FLYER_PRICE[k].three) + '円/台）' : yen(PRICE[k]) + '円/台';
     });
-    $('flyernote').hidden = !fv;
-    $('flyernote').textContent = !fv ? '' : fw ? 'チラシをご覧いただきありがとうございます。壁掛けエアコンとお掃除機能付きエアコンがチラシ価格になりました。' : 'キーワードが違うようです。チラシに書いてある言葉をもう一度ご確認ください。';
     $('e_ref').hidden = !(fw || refValid());
-    $('e_ref').textContent = fw ? 'チラシ価格が入っています' : '紹介割引 −1,000円 が入っています';
-    var c = refCode();
-    $('refnote').hidden = !c;
-    $('refnote').textContent = !c ? '' : fw ? 'チラシ価格が入っているため、紹介割引はつきません（割引はどちらか1つです）。' : refValid() ? 'ご紹介ありがとうございます。紹介割引（1,000円引き）が概算に入っています。' : '紹介コードの形が違うようです（例：R261120-101530）。このままでも送れますが、割引はお店で確認してからのご案内になります。';
+    $('e_ref').textContent = fw ? '特別価格が入っています' : '紹介割引 −1,000円 が入っています';
+    var c = refRaw();
+    $('refnote').hidden = !c || !(fw || refValid());
+    $('refnote').textContent = !c ? '' : fw ? 'ご紹介ありがとうございます。壁掛けエアコンとお掃除機能付きエアコンが特別価格になりました。' : refValid() ? 'ご紹介ありがとうございます。紹介割引（1,000円引き）が概算に入っています。' : 'ご紹介ありがとうございます。';
     document.querySelectorAll('.bk .ctr button').forEach(function (b) {
       var k = b.dataset.k, d = +b.dataset.d;
       b.disabled = d < 0 ? st[k] <= 0 : st[k] >= maxOf(k);
@@ -570,7 +562,6 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   });
 
   $('f_ref').addEventListener('input', renderEst);
-  $('f_flyer').addEventListener('input', renderEst);
 
   function resetForm() {
     $('form').reset();
@@ -579,7 +570,6 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     $('formMsg').hidden = true;
     var sb = $('form').querySelector('button[type=submit]'); sb.disabled = false; sb.textContent = 'この内容で予約する';
     if (refFromUrl) $('f_ref').value = refFromUrl;
-    if (q.get('flyer')) $('f_flyer').value = String(q.get('flyer')).slice(0, 20);
     $('zipMsg').textContent = '';
     renderAll();
   }
@@ -658,13 +648,12 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       height.push('室外機' + j + '台目：' + (hc && hc.value === 'hang' ? '天吊り（作業費 +¥3,000）' : '地面・ベランダ置き（通常）'));
     }
     var pref = function (n) { var r = document.querySelector('input[name=time' + n + ']:checked'); return v('date' + n) + '（' + (r ? r.value : 'いつでも') + '）'; };
-    var ref = refCode(), flyer = flyerWord();
+    var flyer = flyerWord(), ref = flyer ? '' : refValid() ? refCode() : refRaw();
     var housing = document.querySelector('input[name=housing]:checked').value;
     var add = ['【お住まい】' + housing];
     if (v('f_how')) add.push('【きっかけ】' + v('f_how'));
-    if (flyer) add.push('【チラシ】' + flyer + '（チラシ価格を概算に反映）');
-    else if (v('f_flyer')) add.push('【チラシ】キーワード「' + v('f_flyer').slice(0, 20) + '」は一致せず通常価格・要確認');
-    if (ref) add.push('【紹介コード】' + ref + (flyer ? '（チラシ価格のため紹介割引なし）' : refValid() ? '（紹介割引 −1,000円を概算に反映）' : '（形が違うため割引は未反映・要確認）'));
+    if (flyer) add.push('【チラシ】' + flyer + '（紹介者の欄に記入。チラシ価格を概算に反映）');
+    else if (ref) add.push('【紹介者】' + ref + (refValid() ? '（受付番号の紹介。紹介割引 −1,000円を概算に反映）' : ''));
     var notes = add.join('\n') + (v('f_note') ? '\n' + v('f_note') : '');
     var data = {
       website: v('f_website'),
@@ -675,8 +664,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       location: loc.join('\n'), model: model.join('\n'), year: year.join('\n'), heightLabel: height.join('\n'),
       parking: v('f_parking'), pref1: pref(1), pref2: pref(2), pref3: pref(3), pay: v('f_pay'),
       notes: notes, grand: total(), notify: $('f_notify').checked, ref: ref, flyer: flyer, housing: housing,
-      // 紹介コードは流入元にも残す（シートの「流入元」列で見分けられるように）
-      // チラシ・紹介コードは流入元の頭にも残す（シートの「流入元」列で見分け・集計できるように）
+      // チラシ・紹介者は流入元の頭にも残す（シートの「流入元」列で見分け・集計できるように）
       source: (flyer ? 'チラシ:' + flyer + ' ' : '') + (ref ? 'ref=' + ref + ' ' : '') + source,
       device: /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) ? 'スマホ' : 'PC'
     };
@@ -723,8 +711,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     box.innerHTML = '<b>ご家族やお知り合いに紹介しませんか</b>'
       + '<p>このリンクから予約すると、ご紹介された方は1,000円引きになります。</p>'
       + '<div class="link"><input readonly value="' + esc(url) + '" aria-label="あなたの紹介リンク"><button type="button">コピー</button></div>'
-      + '<a class="line" href="https://line.me/R/share?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">LINEで送る</a>'
-      + '<p>あなたの紹介コード：<b style="display:inline">' + esc(id) + '</b></p>';
+      + '<a class="line" href="https://line.me/R/share?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">LINEで送る</a>';
     box.querySelector('button').addEventListener('click', function (e) {
       try { navigator.clipboard.writeText(url).then(function () { e.target.textContent = 'コピーしました'; }, function () { box.querySelector('input').select(); }); }
       catch (_) { box.querySelector('input').select(); }
