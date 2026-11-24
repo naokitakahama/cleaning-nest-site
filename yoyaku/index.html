@@ -238,7 +238,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
         <p class="note">オプションは、当日スタッフと相談してから決めていただいても大丈夫です。</p>
 
         <h3 style="margin-top:20px">2. エアコンごとに教えてください</h3>
-        <p class="note" style="margin-top:0">型番と製造年は、エアコン本体の横や下のシールに書いてあります。製造から10年以上経過した機種は保証の対象外です。</p>
+        <p class="note" style="margin-top:0">型番と製造年は、エアコン本体の横や下のシールに書いてあります。わからなければ空欄で大丈夫です（当日スタッフが確認します）。製造から10年以上経過した機種は保証の対象外です。</p>
         <div id="units"></div>
 
         <h3 style="margin-top:20px">3. ご予約情報を入力する</h3>
@@ -521,8 +521,8 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
           + '<h4>' + esc(t.label) + ' ' + i + '台目</h4>'
           + '<label>設置場所 <small class="req">必須</small></label>'
           + '<select class="u-location"><option value="">選んでください</option>' + ['リビング', '寝室', '子供部屋', '和室', '店舗・事務所', 'その他'].map(function (v) { return opt(v, d.location); }).join('') + '</select>'
-          + '<div class="g2"><div><label>型番 <small class="req">必須</small></label><input type="text" class="u-model" inputmode="latin" autocomplete="off" placeholder="例：MSZ-GV2523" value="' + esc(d.model) + '"></div>'
-          + '<div><label>製造年 <small class="req">必須</small></label><input type="number" class="u-year" inputmode="numeric" min="1990" max="2100" placeholder="例：2019" value="' + esc(d.year) + '"></div></div>'
+          + '<div class="g2"><div><label>型番 <small>任意・わかる範囲で</small></label><input type="text" class="u-model" inputmode="latin" autocomplete="off" placeholder="例：MSZ-GV2523" value="' + esc(d.model) + '"></div>'
+          + '<div><label>製造年 <small>任意・わかる範囲で</small></label><input type="number" class="u-year" inputmode="numeric" min="1990" max="2100" placeholder="例：2019" value="' + esc(d.year) + '"></div></div>'
           + '<p class="note u-yearnote"></p>'
           + '<label>床から吹き出し口までの高さ <small class="req">必須</small></label>'
           + '<div class="radios"><label><input type="radio" class="u-height" name="height-' + id + '" value="normal"' + (d.height !== 'high' ? ' checked' : '') + '>2.3m未満</label>'
@@ -607,10 +607,8 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     for (var i = 0; i < units.length; i++) {
       var u = units[i], label = u.dataset.label;
       if (!u.querySelector('.u-location').value) return { el: u.querySelector('.u-location'), text: label + 'の設置場所を選んでください。' };
-      var m = u.querySelector('.u-model').value.trim();
-      if (!m) return { el: u.querySelector('.u-model'), text: label + 'の型番を入力してください。わからない場合は「不明」と入力してください。' };
       var y = u.querySelector('.u-year').value.trim();
-      if (!/^\d{4}$/.test(y) || +y < 1990 || +y > 2100) return { el: u.querySelector('.u-year'), text: label + 'の製造年を西暦4桁で入力してください（例：2019）。' };
+      if (y && (!/^\d{4}$/.test(y) || +y < 1990 || +y > 2100)) return { el: u.querySelector('.u-year'), text: label + 'の製造年を西暦4桁で入力してください（例：2019）。' };
     }
     var LABELS = { f_name: 'お名前', f_tel: '電話番号', f_email: 'メールアドレス', f_zip: '郵便番号', f_address: 'ご住所', f_banchi: '番地・号', date1: '作業日 第1希望', date2: '作業日 第2希望', date3: '作業日 第3希望', f_parking: '駐車スペース' };
     for (var id in LABELS) {
@@ -639,8 +637,8 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     document.querySelectorAll('.unit[data-id]').forEach(function (u, i) {
       var n = (i + 1) + '台目', h = u.querySelector('.u-height:checked');
       loc.push(n + '（' + u.dataset.label + '）：' + u.querySelector('.u-location').value);
-      model.push(n + '：' + u.querySelector('.u-model').value.trim());
-      year.push(n + '：' + u.querySelector('.u-year').value.trim() + '年');
+      model.push(n + '：' + (u.querySelector('.u-model').value.trim() || '未記入'));
+      var yv = u.querySelector('.u-year').value.trim(); year.push(n + '：' + (yv ? yv + '年' : '未記入'));
       height.push(n + '：' + (h && h.value === 'high' ? '2.3m以上（高所作業費 +¥3,000）' : '2.3m未満（通常）'));
     });
     for (var j = 1; j <= outdoorCount(); j++) {
