@@ -256,7 +256,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
           <div><label for="f_banchi">番地・号 <small class="req">必須</small></label><input type="text" id="f_banchi" name="banchi" autocomplete="address-line1" placeholder="例：1-2-3"></div>
           <div><label for="f_building">建物名・部屋番号 <small>任意</small></label><input type="text" id="f_building" name="building" autocomplete="address-line2"></div>
         </div>
-        <label>お住まいのタイプ <small class="req">必須</small></label>
+        <label>お住まいのタイプ <small>任意</small></label>
         <div class="radios" id="housing"><label><input type="radio" name="housing" value="戸建て">戸建て</label><label><input type="radio" name="housing" value="マンション・アパート">マンション・アパート</label><label><input type="radio" name="housing" value="店舗・事務所など">店舗・事務所など</label></div>
 
         <div class="dateblk">
@@ -619,7 +619,6 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
       if (id === 'f_zip' && v.replace(/[^0-9]/g, '').length !== 7) return { el: el, text: '郵便番号は7桁で入力してください。' };
       if (el.type === 'date' && el.min && v < el.min) return { el: el, text: LABELS[id] + 'は ' + el.min.replace(/-/g, '/') + ' 以降の日付を選んでください。' };
     }
-    if (!document.querySelector('input[name=housing]:checked')) return { el: $('housing'), text: 'お住まいのタイプを選んでください。' };
     return null;
   }
 
@@ -647,7 +646,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
     }
     var pref = function (n) { var r = document.querySelector('input[name=time' + n + ']:checked'); return v('date' + n) + '（' + (r ? r.value : 'いつでも') + '）'; };
     var flyer = flyerWord(), ref = flyer ? '' : refValid() ? refCode() : refRaw();
-    var housing = document.querySelector('input[name=housing]:checked').value;
+    var hc = document.querySelector('input[name=housing]:checked'), housing = hc ? hc.value : '未記入';
     var add = ['【お住まい】' + housing];
     if (v('f_how')) add.push('【きっかけ】' + v('f_how'));
     if (flyer) add.push('【チラシ】' + flyer + '（紹介者の欄に記入。チラシ価格を概算に反映）');
